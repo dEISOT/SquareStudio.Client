@@ -17,5 +17,8 @@ jobs:
       - name: Install dependencies
         run: npm install --prefix /opt/SquareStudio.Client
 
+      - name: Build
+        run: npm run build --prefix /opt/SquareStudio.Client
+
       - name: Restart service
         run: /usr/bin/sudo /bin/systemctl restart SquareStudio.Client

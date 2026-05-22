@@ -71,6 +71,15 @@ export interface Ad {
   imageUrl: string;
 }
 
+export interface AdSlide {
+  eyebrow: string;
+  title: string;
+  body: string;
+  cta: string;
+  bg: string;
+  fg: string;
+}
+
 export interface CartItem {
   productId: number;
   qty: number;
