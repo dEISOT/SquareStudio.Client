@@ -8,4 +8,9 @@ export default defineConfig({
     host: true,
     allowedHosts: ['square-studio.client.nikminer4sv.net'],
   },
+  preview: {
+    port: 5174,
+    host: true,
+    allowedHosts: ['square-studio.client.nikminer4sv.net'],
+  },
 });
