@@ -1,0 +1,19 @@
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    env:
+      PATH: /usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/sbin:/bin
+
+    steps:
+      - name: Pull
+        run: git -C /opt/SquareStudio.Client pull origin main
+
+      - name: Install dependencies
+        run: npm install --prefix /opt/SquareStudio.Client
+
+      - name: Restart service
+        run: sudo systemctl restart SquareStudio.Client
