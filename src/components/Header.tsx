@@ -1,5 +1,6 @@
-import type { Order, KioskSettings } from '../types';
+import type { Order, KioskSettings, ActiveSession } from '../types';
 import { Icon } from './Icon';
+import { SessionChip } from './SessionChip';
 import { rub } from '../utils/format';
 
 interface HeaderProps {
@@ -11,6 +12,10 @@ interface HeaderProps {
   onOpenCart: () => void;
   order: Order | null;
   onOpenStatus: () => void;
+  onLogoTap: () => void;
+  session: ActiveSession | null;
+  onOpenHistory: () => void;
+  onEndSession: () => void;
 }
 
 function orderStatusLabel(status: Order['status']): string {
@@ -30,11 +35,18 @@ function orderDotStatus(status: Order['status']): string {
   }
 }
 
-export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenCart, order, onOpenStatus }: HeaderProps) {
+export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenCart, order, onOpenStatus, onLogoTap, session, onOpenHistory, onEndSession }: HeaderProps) {
   return (
     <header className="topbar">
       <div className="topbar__left">
-        <img src="/logo.webp" alt="SquareStudio" className="brand__mark" />
+        <button
+          onClick={onLogoTap}
+          style={{ background: 'none', border: 'none', padding: 0, cursor: 'default', lineHeight: 0 }}
+          aria-label="logo"
+          tabIndex={-1}
+        >
+          <img src="/logo.webp" alt="SquareStudio" className="brand__mark" />
+        </button>
         <div className="brand__text">
           <div className="brand__name">SquareStudio</div>
           <div className="brand__tag">Barber · Меню заказа</div>
@@ -61,6 +73,14 @@ export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenC
       </div>
 
       <div className="topbar__right">
+        {session && (
+          <SessionChip
+            session={session}
+            onOpenHistory={onOpenHistory}
+            onEnd={onEndSession}
+          />
+        )}
+
         <div className="wifi" title="Wi-Fi для гостей">
           <Icon name="wifi" size={20} />
           <div className="wifi__text">

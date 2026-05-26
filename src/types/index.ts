@@ -90,3 +90,22 @@ export interface CartItem {
 export function cartKey(productId: number, size?: string): string {
   return size ? `${productId}:${size}` : String(productId);
 }
+
+export interface SessionHistoryItem {
+  name: string;
+  qty: number;
+  price: number;
+}
+
+export interface SessionHistoryOrder {
+  id: number;
+  date: string;
+  total: number;
+  items: SessionHistoryItem[];
+}
+
+export interface ActiveSession {
+  name: string;
+  loyaltyPoints: number;
+  history: SessionHistoryOrder[];
+}

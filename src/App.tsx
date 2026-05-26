@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Category, Product, Workstation, CartItem, Order, KioskSettings, Ad } from './types';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import type { Category, Product, Workstation, CartItem, Order, KioskSettings, Ad, ActiveSession } from './types';
 import { fetchCategories } from './api/categories';
 import { fetchPublishedProducts } from './api/products';
 import { fetchWorkstations } from './api/workstations';
@@ -8,6 +8,8 @@ import { fetchKioskSettings } from './api/settings';
 import { fetchPublishedAds } from './api/ads';
 import { useIdle } from './hooks/useIdle';
 import { useToast } from './hooks/useToast';
+import { useSignalR } from './hooks/useSignalR';
+import type { SessionGreeting } from './hooks/useSignalR';
 import { Header } from './components/Header';
 import { CategoryRail } from './components/CategoryRail';
 import { ProductCard } from './components/ProductCard';
@@ -19,6 +21,10 @@ import { IdleSlideshow } from './components/IdleSlideshow';
 import { EmptyState } from './components/EmptyState';
 import { Toast } from './components/Toast';
 import { Icon } from './components/Icon';
+import { SessionGreetingOverlay } from './components/SessionGreeting';
+import { SessionChip } from './components/SessionChip';
+import { OrderHistory } from './components/OrderHistory';
+import { WorkstationSelector } from './components/WorkstationSelector';
 import { rub } from './utils/format';
 
 const DEFAULT_SETTINGS: KioskSettings = {
@@ -142,8 +148,52 @@ export default function App() {
     return m;
   }, [products]);
 
+  // ── Workstation ────────────────────────────────────────────────────────────
+  const [workstationId, setWorkstationId] = useState<number | null>(() => {
+    const saved = localStorage.getItem('kiosk_workstation_id');
+    return saved ? Number(saved) : null;
+  });
+  const [selectorOpen, setSelectorOpen] = useState(false);
+  const logoTaps = useRef<number[]>([]);
+  const [greeting, setGreeting] = useState<SessionGreeting | null>(null);
+  const [session, setSession] = useState<ActiveSession | null>(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
+
+  const handleSelectWorkstation = useCallback((id: number) => {
+    setWorkstationId(id);
+    localStorage.setItem('kiosk_workstation_id', String(id));
+  }, []);
+
+  const handleLogoTap = useCallback(() => {
+    const now = Date.now();
+    const recent = [...logoTaps.current, now].filter((t) => now - t < 2000);
+    if (recent.length >= 3) {
+      logoTaps.current = [];
+      setSelectorOpen(true);
+    } else {
+      logoTaps.current = recent;
+    }
+  }, []);
+
   // ── Idle ───────────────────────────────────────────────────────────────────
   const { idle, wake } = useIdle(settings.idleTimeoutSec);
+
+  const endSession = useCallback(() => {
+    setSession(null);
+    setGreeting(null);
+    setHistoryOpen(false);
+  }, []);
+
+  // ── SignalR (after idle so wake is in scope) ───────────────────────────────
+  useSignalR(
+    workstationId,
+    (g) => {
+      setGreeting(g);
+      setSession({ name: g.clientName, loyaltyPoints: g.loyaltyPoints, history: g.history });
+      wake();
+    },
+    endSession,
+  );
 
   const handleWake = useCallback(() => {
     wake();
@@ -222,6 +272,10 @@ export default function App() {
         onOpenCart={() => setCartOpen(true)}
         order={currentOrder}
         onOpenStatus={() => setStatusOpen(true)}
+        onLogoTap={handleLogoTap}
+        session={session}
+        onOpenHistory={() => setHistoryOpen(true)}
+        onEndSession={endSession}
       />
 
       <CategoryRail
@@ -341,6 +395,28 @@ export default function App() {
       )}
 
       {idle && <IdleSlideshow ads={ads} onWake={handleWake} />}
+
+      {greeting && (
+        <SessionGreetingOverlay
+          greeting={greeting}
+          onDismiss={() => setGreeting(null)}
+        />
+      )}
+
+      {historyOpen && session && (
+        <OrderHistory
+          session={session}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
+
+      <WorkstationSelector
+        open={selectorOpen}
+        onClose={() => setSelectorOpen(false)}
+        workstations={workstations}
+        currentId={workstationId}
+        onSelect={handleSelectWorkstation}
+      />
 
       <Toast message={toast} />
     </div>

@@ -8,8 +8,48 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "idleTimeoutSec": 180,
   "demoIdleNow": false,
   "demoOrderConfirmed": false,
-  "denseGrid": false
+  "denseGrid": false,
+  "device": "auto"
 }/*EDITMODE-END*/;
+
+const DEVICES = {
+  'auto':       { label: 'Авто · во весь экран',         w: null, h: null,  short: 'AUTO' },
+  'desktop':    { label: 'Десктоп · 1440×900',          w: 1440, h: 900,   short: 'DESKTOP' },
+  'ipad-l':     { label: 'iPad ландшафт · 1180×820',       w: 1180, h: 820,   short: 'iPad LANDSCAPE' },
+  'ipad-pro-l': { label: 'iPad Pro 12.9 ландш. · 1366×1024', w: 1366, h: 1024, short: 'iPad PRO 12.9 LANDSCAPE' },
+  'ipad-p':     { label: 'iPad портрет · 820×1180',         w: 820,  h: 1180,  short: 'iPad PORTRAIT' },
+  'iphone':     { label: 'iPhone · 390×844',                w: 390,  h: 844,   short: 'iPhone' },
+};
+
+// Default session data — shown until a real socket greeting arrives or the
+// session is ended via the header's × button.
+const DEFAULT_SESSION = {
+  name: 'Алексей',
+  points: 2480,
+  tier: 'Silver',
+  nextTier: 'Gold',
+  toNext: 520,
+  history: [
+    { id: 'A-742', date: '12 марта', total: 890, items: [
+      { name: 'Капучино',  qty: 2, price: 240 },
+      { name: 'Чизкейк нью-йорк', qty: 1, price: 410 },
+    ]},
+    { id: 'A-689', date: '28 февраля', total: 1650, items: [
+      { name: 'Стрижка классическая', qty: 1, price: 1200 },
+      { name: 'Эспрессо', qty: 1, price: 150 },
+      { name: 'Бритьё опасной бритвой', qty: 1, price: 300 },
+    ]},
+    { id: 'A-651', date: '15 февраля', total: 1240, items: [
+      { name: 'Капучино', qty: 1, price: 240 },
+      { name: 'Стрижка детская', qty: 1, price: 800 },
+      { name: 'Тоник для бороды', qty: 1, price: 200 },
+    ]},
+    { id: 'A-602', date: '02 февраля', total: 720, items: [
+      { name: 'Двойной эспрессо', qty: 1, price: 290 },
+      { name: 'Круассан миндальный', qty: 2, price: 215 },
+    ]},
+  ],
+};
 
 function App() {
   const [t, setTweak] = window.useTweaks
@@ -28,7 +68,66 @@ function App() {
   const [statusOpen, setStatusOpen] = useSt(false);
   const [toast, setToast] = useSt(null);
   const [idle, setIdle] = useSt(false);
+  const [greetName, setGreetName] = useSt(null);   // null = hidden; string = visible w/ name
+  const [session, setSession] = useSt(DEFAULT_SESSION); // { name, points, tier, nextTier, toNext, history: [...] }
+  const [historyOpen, setHistoryOpen] = useSt(false);
 
+  // ── Greeting + session (socket-triggered) ───────────────────────────────────────
+  // The backend calls one of these when a guest's session opens. Two payload shapes:
+  //   window.showGreeting('Алексей')            // name only — no loyalty data
+  //   window.showGreeting({                            // full session payload
+  //     name: 'Алексей',
+  //     points: 2480, tier: 'Silver', nextTier: 'Gold', toNext: 520,
+  //     history: [{ id, date, total, items: [{name, qty, price}] }, ...]
+  //   })
+  //   window.endSession()                              // clears session + history chip
+  //   window.parent?.postMessage({ type: 'greeting', … }, '*')
+  //   window.parent?.postMessage({ type: 'session:end' }, '*')
+  //
+  // The greeting overlay is just a welcome card. The loyalty tiles and the order-history
+  // screen live on the main page and are gated by `session` — so each guest's data only
+  // appears for the duration of THEIR session and is replaced when the next one opens.
+  const applyGreeting = useCb((payload) => {
+    if (payload == null) { setGreetName(null); return; }
+    if (typeof payload === 'string') {
+      const name = payload.trim() || 'Гость';
+      setGreetName(name);
+      // String form means "new guest, no loyalty data" — start a bare session
+      // with just the name so the header still personalizes.
+      setSession({ name });
+      return;
+    }
+    const { name: rawName, ...rest } = payload;
+    const name = String(rawName ?? '').trim() || 'Гость';
+    setGreetName(name);
+    setSession({ name, ...rest });
+  }, []);
+
+  const endSession = useCb(() => {
+    setGreetName(null);
+    setSession(null);
+    setHistoryOpen(false);
+  }, []);
+
+  useEf(() => {
+    window.showGreeting = applyGreeting;
+    window.hideGreeting = () => setGreetName(null);
+    window.endSession = endSession;
+    const onMsg = (ev) => {
+      const d = ev?.data;
+      if (!d || typeof d !== 'object') return;
+      if (d.type === 'greeting' || d.type === 'session:greet') {
+        const { type, ...payload } = d;
+        applyGreeting(payload);
+      }
+      if (d.type === 'greeting:hide') setGreetName(null);
+      if (d.type === 'session:end') endSession();
+    };
+    window.addEventListener('message', onMsg);
+    return () => window.removeEventListener('message', onMsg);
+  }, [applyGreeting, endSession]);
+
+  // While the greeting is up, freeze the idle countdown so it doesn't fire underneath.
   // ── Idle timer ─────────────────────────────────────────────────────────────
   const idleRef = useRf();
   const resetIdle = useCb(() => {
@@ -142,7 +241,19 @@ function App() {
   // ── Render ─────────────────────────────────────────────────────────────────
   const categoryName = (id) => (window.CATEGORIES.find((c) => c.id === id) || {}).name || '';
 
+  const dev = DEVICES[t.device] || DEVICES.auto;
+  const stageStyle = dev.w ? { '--dev-w': dev.w + 'px', '--dev-h': dev.h + 'px' } : {};
+
   return (
+    <>
+    <div className="stagewrap" data-device={t.device} style={stageStyle}>
+      {t.device !== 'auto' && (
+        <div className="devicelabel">
+          <span className="devicelabel__dot"/>
+          <strong>{dev.short}</strong>
+          <span> · {dev.w}×{dev.h}</span>
+        </div>
+      )}
     <div className={`app ${t.denseGrid ? 'is-dense' : ''}`}>
       <Header
         wifi={window.WIFI}
@@ -153,6 +264,9 @@ function App() {
         onOpenCart={() => setCartOpen(true)}
         onOpenStatus={() => setStatusOpen(true)}
         order={order}
+        session={session}
+        onOpenHistory={() => setHistoryOpen(true)}
+        onEndSession={endSession}
       />
 
       <CategoryRail
@@ -270,14 +384,41 @@ function App() {
 
       {idle && <IdleSlideshow onWake={wake}/>}
 
+      {greetName !== null && (
+        <window.Greeting
+          name={greetName}
+          onDismiss={() => { setGreetName(null); resetIdle(); }}
+        />
+      )}
+
+      {historyOpen && session && (
+        <window.OrderHistory
+          session={session}
+          onClose={() => setHistoryOpen(false)}
+        />
+      )}
+
       {toast && <div className="toast"><Icon name="check" size={16}/><span>{toast}</span></div>}
+
+    </div>{/* /.app */}
+    </div>{/* /.stagewrap */}
 
       {/* Tweaks panel */}
       {window.TweaksPanel && (
         <window.TweaksPanel title="Tweaks">
           <window.TweakSection label="Демо-управление">
             <window.TweakButton
+              label="Показать приветствие"
+              onClick={() => applyGreeting(DEFAULT_SESSION)}
+            />
+            <window.TweakButton
+              label="Завершить сессию"
+              secondary
+              onClick={endSession}
+            />
+            <window.TweakButton
               label="Запустить экран ожидания"
+              secondary
               onClick={() => setTweak('demoIdleNow', true)}
             />
             <window.TweakToggle
@@ -289,6 +430,14 @@ function App() {
               label="Открыть статус заказа"
               secondary
               onClick={() => { if (order) setStatusOpen(true); }}
+            />
+          </window.TweakSection>
+          <window.TweakSection label="Превью устройства">
+            <window.TweakSelect
+              label="Размер экрана"
+              value={t.device}
+              options={Object.entries(DEVICES).map(([id, d]) => ({ value: id, label: d.label }))}
+              onChange={(v) => setTweak('device', v)}
             />
           </window.TweakSection>
           <window.TweakSection label="Поведение">
@@ -307,7 +456,7 @@ function App() {
           </window.TweakSection>
         </window.TweaksPanel>
       )}
-    </div>
+    </>
   );
 }
 
@@ -318,7 +467,7 @@ function countsByCategory(products) {
 }
 
 // ── Header ────────────────────────────────────────────────────────────────────
-function Header({ wifi, query, onQuery, cartCount, cartTotal, onOpenCart, order, onOpenStatus }) {
+function Header({ wifi, query, onQuery, cartCount, cartTotal, onOpenCart, order, onOpenStatus, session, onOpenHistory, onEndSession }) {
   return (
     <header className="topbar">
       <div className="topbar__left">
@@ -345,6 +494,13 @@ function Header({ wifi, query, onQuery, cartCount, cartTotal, onOpenCart, order,
       </div>
 
       <div className="topbar__right">
+        {session && (
+          <window.SessionChip
+            session={session}
+            onOpenHistory={onOpenHistory}
+            onEnd={onEndSession}
+          />
+        )}
         <div className="wifi" title="Wi-Fi для гостей">
           <Icon name="wifi" size={20}/>
           <div className="wifi__text">
