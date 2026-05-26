@@ -22,7 +22,6 @@ import { EmptyState } from './components/EmptyState';
 import { Toast } from './components/Toast';
 import { Icon } from './components/Icon';
 import { SessionGreetingOverlay } from './components/SessionGreeting';
-import { SessionChip } from './components/SessionChip';
 import { OrderHistory } from './components/OrderHistory';
 import { WorkstationSelector } from './components/WorkstationSelector';
 import { rub } from './utils/format';
