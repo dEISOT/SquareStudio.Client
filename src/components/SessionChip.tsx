@@ -6,14 +6,6 @@ interface SessionChipProps {
   onOpenHistory: () => void;
 }
 
-function pluralVisit(n: number): string {
-  const a = Math.abs(n) % 100;
-  const b = a % 10;
-  if (a > 10 && a < 20) return 'визитов';
-  if (b > 1 && b < 5)   return 'визита';
-  if (b === 1)           return 'визит';
-  return 'визитов';
-}
 
 export function SessionChip({ session, onOpenHistory }: SessionChipProps) {
   const { name, loyaltyPoints } = session;

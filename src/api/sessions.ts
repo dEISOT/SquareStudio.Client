@@ -1,4 +1,3 @@
-import { apiFetch } from './client';
 import type { SessionGreeting } from '../hooks/useSignalR';
 
 export async function fetchActiveSession(workStationId: number): Promise<SessionGreeting | null> {
