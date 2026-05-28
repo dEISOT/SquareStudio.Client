@@ -125,7 +125,7 @@ export default function App() {
       if (!q) return true;
       return (
         p.name.toLowerCase().includes(q) ||
-        p.description.toLowerCase().includes(q)
+        p.description?.toLowerCase().includes(q)
       );
     });
   }, [products, activeCat, query]);
