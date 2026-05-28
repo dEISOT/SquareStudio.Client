@@ -39,7 +39,7 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
         <div className="pdp__body">
           <div className="pdp__cat">{product.categoryName}</div>
           <h2 className="pdp__name">{product.name}</h2>
-          <p className="pdp__desc">{product.description}</p>
+          {product.description && <p className="pdp__desc">{product.description}</p>}
 
           {hasSizes && (
             <div className="pdp__sizes-section">
