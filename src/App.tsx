@@ -17,7 +17,7 @@ import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
 import { CartDrawer } from './components/CartDrawer';
 import { Checkout } from './components/Checkout';
-import { OrderStatus } from './components/OrderStatus';
+import { OrdersOverlay } from './components/OrdersOverlay';
 import { IdleSlideshow } from './components/IdleSlideshow';
 import { EmptyState } from './components/EmptyState';
 import { Toast } from './components/Toast';
@@ -65,7 +65,8 @@ export default function App() {
   const [openProduct, setOpenProduct]   = useState<Product | null>(null);
   const [cartOpen, setCartOpen]         = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [statusOpen, setStatusOpen]     = useState(false);
+  const [ordersOpen, setOrdersOpen]     = useState(false);
+  const [viewingOrderId, setViewingOrderId] = useState<number | null>(null);
   const [submitting, setSubmitting]     = useState(false);
 
   // ── Cart ───────────────────────────────────────────────────────────────────
@@ -212,18 +213,47 @@ export default function App() {
     setQuery('');
   }, [wake]);
 
-  // ── Order ──────────────────────────────────────────────────────────────────
-  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  // ── Orders ─────────────────────────────────────────────────────────────────
+  const [activeOrders, setActiveOrders] = useState<Order[]>(() => {
+    try { return JSON.parse(localStorage.getItem('kiosk_orders') ?? '[]') as Order[]; }
+    catch { return []; }
+  });
+
+  // Re-fetch saved orders on mount to get latest statuses
+  useEffect(() => {
+    const saved: Order[] = (() => {
+      try { return JSON.parse(localStorage.getItem('kiosk_orders') ?? '[]') as Order[]; }
+      catch { return []; }
+    })();
+    if (saved.length === 0) return;
+    Promise.all(saved.map((o) => fetchOrder(o.id)))
+      .then((updated) => setActiveOrders(updated))
+      .catch(() => {});
+  }, []);
+
+  // Persist only active (non-terminal) orders
+  useEffect(() => {
+    const toSave = activeOrders.filter((o) => o.status !== 'Done' && o.status !== 'Canceled');
+    localStorage.setItem('kiosk_orders', JSON.stringify(toSave));
+  }, [activeOrders]);
+
+  const pendingIds = activeOrders
+    .filter((o) => o.status !== 'Done' && o.status !== 'Canceled')
+    .map((o) => o.id)
+    .join(',');
 
   useEffect(() => {
-    if (!statusOpen || !currentOrder) return;
-    if (currentOrder.status === 'Done' || currentOrder.status === 'Canceled') return;
+    if (!pendingIds) return;
+    const ids = pendingIds.split(',').map(Number);
     const t = setInterval(() => {
-      fetchOrder(currentOrder.id).then(setCurrentOrder).catch(() => {});
+      ids.forEach((id) => {
+        fetchOrder(id).then((updated) => {
+          setActiveOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+        }).catch(() => {});
+      });
     }, 5000);
     return () => clearInterval(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusOpen, currentOrder?.id, currentOrder?.status]);
+  }, [pendingIds]);
 
   const handleSubmitOrder = async (data: {
     name: string;
@@ -243,11 +273,12 @@ export default function App() {
           size: it.selectedSize,
         })),
       });
-      setCurrentOrder(order);
+      setActiveOrders((prev) => [...prev, order]);
       setCart([]);
       setCheckoutOpen(false);
       setCartOpen(false);
-      setStatusOpen(true);
+      setOrdersOpen(true);
+      setViewingOrderId(order.id);
     } catch {
       flash('Ошибка при отправке заказа. Попробуйте ещё раз.');
     } finally {
@@ -255,9 +286,8 @@ export default function App() {
     }
   };
 
-  const handleCancelOrder = () => {
-    setCurrentOrder(null);
-    setStatusOpen(false);
+  const handleCancelOrder = (orderId: number) => {
+    setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
     flash('Заказ отменён');
   };
 
@@ -282,8 +312,8 @@ export default function App() {
         cartCount={cartCount}
         cartTotal={cartTotal}
         onOpenCart={() => setCartOpen(true)}
-        order={currentOrder}
-        onOpenStatus={() => setStatusOpen(true)}
+        activeOrderCount={activeOrders.filter((o) => o.status !== 'Done' && o.status !== 'Canceled').length}
+        onOpenOrders={() => setOrdersOpen(true)}
         onLogoTap={handleLogoTap}
         session={session}
         onOpenHistory={() => setHistoryOpen(true)}
@@ -357,7 +387,7 @@ export default function App() {
         <div className="footer-pad" />
       </main>
 
-      {cartCount > 0 && !cartOpen && !checkoutOpen && !statusOpen && (
+      {cartCount > 0 && !cartOpen && !checkoutOpen && !ordersOpen && (
         <button className="cartbar" onClick={() => setCartOpen(true)}>
           <span className="cartbar__count">{cartCount}</span>
           <span className="cartbar__label">В корзине</span>
@@ -398,11 +428,12 @@ export default function App() {
         prefillWorkstationId={workstationId}
       />
 
-      {statusOpen && currentOrder && (
-        <OrderStatus
-          order={currentOrder}
+      {ordersOpen && (
+        <OrdersOverlay
+          orders={activeOrders}
           productsById={productsById}
-          onClose={() => setStatusOpen(false)}
+          initialViewingId={viewingOrderId}
+          onClose={() => { setOrdersOpen(false); setViewingOrderId(null); }}
           onCancel={handleCancelOrder}
         />
       )}

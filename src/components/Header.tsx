@@ -1,4 +1,4 @@
-import type { Order, KioskSettings, ActiveSession } from '../types';
+import type { KioskSettings, ActiveSession } from '../types';
 import { Icon } from './Icon';
 import { SessionChip } from './SessionChip';
 import { rub } from '../utils/format';
@@ -10,31 +10,14 @@ interface HeaderProps {
   cartCount: number;
   cartTotal: number;
   onOpenCart: () => void;
-  order: Order | null;
-  onOpenStatus: () => void;
+  activeOrderCount: number;
+  onOpenOrders: () => void;
   onLogoTap: () => void;
   session: ActiveSession | null;
   onOpenHistory: () => void;
 }
 
-function orderStatusLabel(status: Order['status']): string {
-  switch (status) {
-    case 'Pending':    return 'Ожидает подтверждения';
-    case 'InProgress': return 'Готовим';
-    case 'Done':       return 'У вас';
-    case 'Canceled':   return 'Отменён';
-  }
-}
-
-function orderDotStatus(status: Order['status']): string {
-  switch (status) {
-    case 'InProgress': return 'confirmed';
-    case 'Done':       return 'delivered';
-    default:           return 'pending';
-  }
-}
-
-export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenCart, order, onOpenStatus, onLogoTap, session, onOpenHistory }: HeaderProps) {
+export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenCart, activeOrderCount, onOpenOrders, onLogoTap, session, onOpenHistory }: HeaderProps) {
   return (
     <header className="topbar">
       <div className="topbar__left">
@@ -89,12 +72,12 @@ export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenC
           </div>
         </div>
 
-        {order && order.status !== 'Canceled' && (
-          <button className="orderchip" onClick={onOpenStatus}>
-            <span className="orderchip__dot" data-status={orderDotStatus(order.status)} />
+        {activeOrderCount > 0 && (
+          <button className="orderchip" onClick={onOpenOrders}>
+            <span className="orderchip__dot" data-status="pending" />
             <div className="orderchip__text">
-              <span>Заказ № {order.id}</span>
-              <span>{orderStatusLabel(order.status)}</span>
+              <span>{activeOrderCount === 1 ? '1 заказ' : `${activeOrderCount} заказа`}</span>
+              <span>Отслеживать</span>
             </div>
           </button>
         )}

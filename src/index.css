@@ -1029,6 +1029,21 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 .history__lede { color: var(--dim); margin-top: 10px; max-width: 50ch; }
 .history__stats { display: flex; gap: 12px; }
 .history__list { display: flex; flex-direction: column; gap: 12px; }
+.olist { display: flex; flex-direction: column; gap: 10px; padding: 20px 24px; }
+.ocard {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 16px; width: 100%; text-align: left;
+  background: var(--paper-2); border: 1px solid var(--line);
+  cursor: pointer; transition: background 150ms;
+}
+.ocard:hover { background: var(--paper-3, #ededec); }
+.ocard__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.ocard__top { display: flex; align-items: center; gap: 10px; }
+.ocard__num { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.ocard__status { font-size: 13px; font-weight: 700; }
+.ocard__items { font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ocard__total { font-family: var(--mono); font-weight: 700; font-size: 14px; flex-shrink: 0; }
+
 .history__section-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); margin: 20px 0 8px; }
 
 .hrow {
