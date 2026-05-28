@@ -12,6 +12,8 @@ interface CheckoutProps {
   onCancel: () => void;
   onSubmit: (data: { name: string; workstationId: number; note: string }) => void;
   submitting?: boolean;
+  prefillName?: string;
+  prefillWorkstationId?: number | null;
 }
 
 export function Checkout({
@@ -22,6 +24,8 @@ export function Checkout({
   onCancel,
   onSubmit,
   submitting = false,
+  prefillName,
+  prefillWorkstationId,
 }: CheckoutProps) {
   const [name, setName] = useState('');
   const [ws, setWs] = useState('');
@@ -34,7 +38,12 @@ export function Checkout({
       setWs('');
       setNote('');
       setTouched(false);
+    } else {
+      setName(prefillName ?? '');
+      setWs(prefillWorkstationId ? String(prefillWorkstationId) : '');
     }
+  // prefillName/prefillWorkstationId are captured at open time — deps intentional
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   if (!open) return null;

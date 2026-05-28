@@ -9,6 +9,7 @@ export interface Product {
   description: string;
   price: number;
   imageUrl?: string | null;
+  videoUrl?: string | null;
   categoryId: number;
   categoryName: string;
   isPublished: boolean;
@@ -31,6 +32,7 @@ export interface CreateOrderPayload {
   workStationId: number;
   customer: string;
   note?: string;
+  sessionId?: number;
   items: OrderItemRequest[];
 }
 
@@ -105,7 +107,9 @@ export interface SessionHistoryOrder {
 }
 
 export interface ActiveSession {
+  sessionId: number;
   name: string;
   loyaltyPoints: number;
+  totalSessions: number;
   history: SessionHistoryOrder[];
 }

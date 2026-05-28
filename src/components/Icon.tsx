@@ -49,6 +49,8 @@ export function Icon({ name, size = 20, stroke = 1.6, style }: IconProps) {
       return <svg {...common}><path d="M4 5h16M4 10h16M4 15h10"/></svg>;
     case 'chair':
       return <svg {...common}><path d="M6 11V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v5"/><path d="M4 11h16l-1 4H5z"/><path d="M7 15v5M17 15v5"/></svg>;
+    case 'star':
+      return <svg {...common}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
     default:
       return null;
   }

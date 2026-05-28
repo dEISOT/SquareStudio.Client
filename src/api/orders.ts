@@ -9,3 +9,6 @@ export const createOrder = (payload: CreateOrderPayload): Promise<Order> =>
 
 export const fetchOrder = (id: number): Promise<Order> =>
   apiFetch<Order>(`/orders/${id}`);
+
+export const fetchOrdersBySession = (sessionId: number): Promise<Order[]> =>
+  apiFetch<Order[]>(`/orders/session/${sessionId}`);

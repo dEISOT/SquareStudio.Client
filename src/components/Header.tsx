@@ -15,7 +15,6 @@ interface HeaderProps {
   onLogoTap: () => void;
   session: ActiveSession | null;
   onOpenHistory: () => void;
-  onEndSession: () => void;
 }
 
 function orderStatusLabel(status: Order['status']): string {
@@ -35,7 +34,7 @@ function orderDotStatus(status: Order['status']): string {
   }
 }
 
-export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenCart, order, onOpenStatus, onLogoTap, session, onOpenHistory, onEndSession }: HeaderProps) {
+export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenCart, order, onOpenStatus, onLogoTap, session, onOpenHistory }: HeaderProps) {
   return (
     <header className="topbar">
       <div className="topbar__left">
@@ -77,7 +76,6 @@ export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenC
           <SessionChip
             session={session}
             onOpenHistory={onOpenHistory}
-            onEnd={onEndSession}
           />
         )}
 

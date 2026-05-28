@@ -354,6 +354,15 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   color: rgba(12,20,38,0.55);
 }
 .photo--line .photo__mono { font-size: 14px; }
+.photo__video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.photo__play {
+  position: absolute; bottom: 7px; right: 7px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(0,0,0,.52); color: #fff;
+  font-size: 9px; display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  padding-left: 2px;
+}
 
 .card__body  { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .card__head  { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
@@ -1020,6 +1029,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 .history__lede { color: var(--dim); margin-top: 10px; max-width: 50ch; }
 .history__stats { display: flex; gap: 12px; }
 .history__list { display: flex; flex-direction: column; gap: 12px; }
+.history__section-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); margin: 20px 0 8px; }
 
 .hrow {
   border: 1px solid var(--line); border-radius: var(--r-md);

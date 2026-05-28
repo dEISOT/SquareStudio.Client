@@ -6,6 +6,7 @@ import { fetchWorkstations } from './api/workstations';
 import { createOrder, fetchOrder } from './api/orders';
 import { fetchKioskSettings } from './api/settings';
 import { fetchPublishedAds } from './api/ads';
+import { fetchActiveSession } from './api/sessions';
 import { useIdle } from './hooks/useIdle';
 import { useToast } from './hooks/useToast';
 import { useSignalR } from './hooks/useSignalR';
@@ -183,12 +184,23 @@ export default function App() {
     setHistoryOpen(false);
   }, []);
 
+  // ── Restore active session on load / workstation change ───────────────────
+  useEffect(() => {
+    if (loading || !workstationId || session) return;
+    fetchActiveSession(workstationId)
+      .then((g) => {
+        if (g) setSession({ sessionId: g.sessionId, name: g.clientName, loyaltyPoints: g.loyaltyPoints, totalSessions: g.totalSessions, history: g.history });
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, workstationId]);
+
   // ── SignalR (after idle so wake is in scope) ───────────────────────────────
   useSignalR(
     workstationId,
     (g) => {
       setGreeting(g);
-      setSession({ name: g.clientName, loyaltyPoints: g.loyaltyPoints, history: g.history });
+      setSession({ sessionId: g.sessionId, name: g.clientName, loyaltyPoints: g.loyaltyPoints, totalSessions: g.totalSessions, history: g.history });
       wake();
     },
     endSession,
@@ -224,6 +236,7 @@ export default function App() {
         workStationId: data.workstationId,
         customer: data.name,
         note: data.note || undefined,
+        sessionId: session?.sessionId ?? undefined,
         items: cart.map((it) => ({
           productId: it.productId,
           quantity: it.qty,
@@ -274,7 +287,6 @@ export default function App() {
         onLogoTap={handleLogoTap}
         session={session}
         onOpenHistory={() => setHistoryOpen(true)}
-        onEndSession={endSession}
       />
 
       <CategoryRail
@@ -382,6 +394,8 @@ export default function App() {
         onCancel={() => { setCheckoutOpen(false); setCartOpen(true); }}
         onSubmit={handleSubmitOrder}
         submitting={submitting}
+        prefillName={session?.name}
+        prefillWorkstationId={workstationId}
       />
 
       {statusOpen && currentOrder && (

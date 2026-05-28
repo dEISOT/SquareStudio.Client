@@ -22,6 +22,7 @@ export interface SessionGreeting {
   masterName: string;
   workStationId: number;
   loyaltyPoints: number;
+  totalSessions: number;
   history: SessionHistoryOrder[];
 }
 
