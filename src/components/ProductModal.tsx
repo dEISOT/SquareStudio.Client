@@ -3,7 +3,7 @@ import type { Product } from '../types';
 import { Modal } from './Modal';
 import { PhotoSlot } from './PhotoSlot';
 import { Icon } from './Icon';
-import { rub } from '../utils/format';
+import { rub, variantPrice } from '../utils/format';
 
 interface ProductModalProps {
   product: Product | null;
@@ -17,8 +17,9 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
 
   if (!product) return null;
 
-  const hasSizes = product.availableSizes.length > 0;
+  const hasSizes = product.variants.length > 0;
   const canAdd   = !hasSizes || selectedSize !== undefined;
+  const displayPrice = variantPrice(product, selectedSize);
   const currentQty = qtyInCart(selectedSize);
 
   const handleClose = () => {
@@ -43,15 +44,15 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
 
           {hasSizes && (
             <div className="pdp__sizes-section">
-              <div className="pdp__sizes-label">Размер</div>
+              <div className="pdp__sizes-label">Вариант</div>
               <div className="pdp__sizes">
-                {product.availableSizes.map((s) => (
+                {product.variants.map((v) => (
                   <button
-                    key={s}
-                    className={`size-chip size-chip--lg ${selectedSize === s ? 'is-active' : ''}`}
-                    onClick={() => setSelectedSize((prev) => (prev === s ? undefined : s))}
+                    key={v.name}
+                    className={`size-chip size-chip--lg ${selectedSize === v.name ? 'is-active' : ''}`}
+                    onClick={() => setSelectedSize((prev) => (prev === v.name ? undefined : v.name))}
                   >
-                    {s}
+                    {v.name}
                   </button>
                 ))}
               </div>
@@ -61,7 +62,7 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
             </div>
           )}
 
-          <div className="pdp__price">{rub(product.price)}</div>
+          <div className="pdp__price">{rub(displayPrice)}</div>
 
           <div className="pdp__cta">
             <button

@@ -3,7 +3,7 @@ import type { CartItem, Product } from '../types';
 import { cartKey } from '../types';
 import { Icon } from './Icon';
 import { PhotoSlot } from './PhotoSlot';
-import { rub } from '../utils/format';
+import { rub, variantPrice } from '../utils/format';
 
 interface CartDrawerProps {
   open: boolean;
@@ -26,7 +26,10 @@ export function CartDrawer({
   onRemove,
   onCheckout,
 }: CartDrawerProps) {
-  const total = items.reduce((s, it) => s + it.qty * (productsById[it.productId]?.price ?? 0), 0);
+  const total = items.reduce((s, it) => {
+    const pr = productsById[it.productId];
+    return s + it.qty * (pr ? variantPrice(pr, it.selectedSize) : 0);
+  }, 0);
   const count = items.reduce((s, it) => s + it.qty, 0);
 
   useEffect(() => {
@@ -107,7 +110,7 @@ export function CartDrawer({
                             <Icon name="plus" size={16} />
                           </button>
                         </div>
-                        <div className="line__price">{rub(pr.price * it.qty)}</div>
+                        <div className="line__price">{rub(variantPrice(pr, it.selectedSize) * it.qty)}</div>
                       </div>
                     </div>
                   </li>

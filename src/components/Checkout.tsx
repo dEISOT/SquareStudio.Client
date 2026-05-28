@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { CartItem, Product, Workstation } from '../types';
 import { cartKey } from '../types';
 import { Icon } from './Icon';
-import { rub } from '../utils/format';
+import { rub, variantPrice } from '../utils/format';
 
 interface CheckoutProps {
   open: boolean;
@@ -48,7 +48,10 @@ export function Checkout({
 
   if (!open) return null;
 
-  const total = items.reduce((s, it) => s + it.qty * (productsById[it.productId]?.price ?? 0), 0);
+  const total = items.reduce((s, it) => {
+    const pr = productsById[it.productId];
+    return s + it.qty * (pr ? variantPrice(pr, it.selectedSize) : 0);
+  }, 0);
   const count = items.reduce((s, it) => s + it.qty, 0);
   const valid = name.trim().length >= 2 && !!ws;
 

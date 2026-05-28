@@ -2,11 +2,10 @@ import { useState } from 'react';
 import type { Product } from '../types';
 import { Icon } from './Icon';
 import { PhotoSlot } from './PhotoSlot';
-import { rub } from '../utils/format';
+import { rub, variantPrice } from '../utils/format';
 
 interface ProductCardProps {
   product: Product;
-  /** Returns qty in cart for the given size (or undefined for no-size products) */
   qtyInCart: (size?: string) => number;
   onOpen: () => void;
   onAdd: (size?: string) => void;
@@ -15,19 +14,18 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }: ProductCardProps) {
-  const hasSizes = product.availableSizes.length > 0;
-  const [selectedSize, setSelectedSize] = useState<string | undefined>(
-    hasSizes ? undefined : undefined
-  );
+  const hasVariants = product.variants.length > 0;
+  const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   const currentQty = qtyInCart(selectedSize);
-  const canAdd = !hasSizes || selectedSize !== undefined;
+  const canAdd = !hasVariants || selectedSize !== undefined;
+  const displayPrice = variantPrice(product, selectedSize);
 
-  const handleSizePick = (e: React.MouseEvent, size: string) => {
+  const handleSizePick = (e: React.MouseEvent, name: string) => {
     stop(e);
-    setSelectedSize((prev) => (prev === size ? undefined : size));
+    setSelectedSize((prev) => (prev === name ? undefined : name));
   };
 
   return (
@@ -37,39 +35,31 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
         <div className="card__head">
           <h3 className="card__name">{product.name}</h3>
         </div>
-        <p className="card__desc">{product.description}</p>
+        {product.description && <p className="card__desc">{product.description}</p>}
 
-        {hasSizes && (
+        {hasVariants && (
           <div className="card__sizes" onClick={stop}>
-            {product.availableSizes.map((s) => (
+            {product.variants.map((v) => (
               <button
-                key={s}
-                className={`size-chip ${selectedSize === s ? 'is-active' : ''}`}
-                onClick={(e) => handleSizePick(e, s)}
+                key={v.name}
+                className={`size-chip ${selectedSize === v.name ? 'is-active' : ''}`}
+                onClick={(e) => handleSizePick(e, v.name)}
               >
-                {s}
+                {v.name}
               </button>
             ))}
           </div>
         )}
 
         <div className="card__foot">
-          <span className="card__price">{rub(product.price)}</span>
+          <span className="card__price">{rub(displayPrice)}</span>
           {currentQty > 0 && canAdd ? (
             <div className="qty" onClick={stop}>
-              <button
-                className="qty__btn"
-                onClick={() => onDec(selectedSize)}
-                aria-label="Убрать одну"
-              >
+              <button className="qty__btn" onClick={() => onDec(selectedSize)} aria-label="Убрать одну">
                 <Icon name="minus" size={18} />
               </button>
               <span className="qty__n">{currentQty}</span>
-              <button
-                className="qty__btn"
-                onClick={() => onInc(selectedSize)}
-                aria-label="Добавить одну"
-              >
+              <button className="qty__btn" onClick={() => onInc(selectedSize)} aria-label="Добавить одну">
                 <Icon name="plus" size={18} />
               </button>
             </div>
@@ -77,14 +67,11 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
             <button
               className={`add ${!canAdd ? 'add--disabled' : ''}`}
               disabled={!canAdd}
-              onClick={(e) => {
-                stop(e);
-                if (canAdd) onAdd(selectedSize);
-              }}
-              title={hasSizes && !selectedSize ? 'Выберите размер' : undefined}
+              onClick={(e) => { stop(e); if (canAdd) onAdd(selectedSize); }}
+              title={hasVariants && !selectedSize ? 'Выберите вариант' : undefined}
             >
               <Icon name="plus" size={18} />
-              <span>{hasSizes && !selectedSize ? 'Выберите' : 'В корзину'}</span>
+              <span>{hasVariants && !selectedSize ? 'Выберите' : 'В корзину'}</span>
             </button>
           )}
         </div>

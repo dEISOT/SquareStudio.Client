@@ -148,7 +148,7 @@ export function OrderHistory({ session, onClose }: OrderHistoryProps) {
             </div>
             <div className="tile">
               <div className="tile__value">{rub(totalSpent)}</div>
-              <div className="tile__label">сумма</div>
+              <div className="tile__label">сумма текущего визита</div>
             </div>
           </div>
         </header>

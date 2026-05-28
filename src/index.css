@@ -513,7 +513,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   padding: 6px 14px;
   border-radius: 20px;
   border: 1.5px solid var(--border);
-  background: var(--surface);
+  background: var(--paper-2);
   color: var(--ink);
   font-family: var(--font-body);
   font-size: 13px;

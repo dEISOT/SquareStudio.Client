@@ -3,6 +3,11 @@ export interface Category {
   name: string;
 }
 
+export interface ProductVariant {
+  name: string;
+  price?: number | null;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -13,7 +18,7 @@ export interface Product {
   categoryId: number;
   categoryName: string;
   isPublished: boolean;
-  availableSizes: string[];
+  variants: ProductVariant[];
 }
 
 export interface Workstation {

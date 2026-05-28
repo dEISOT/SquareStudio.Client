@@ -25,7 +25,7 @@ import { Icon } from './components/Icon';
 import { SessionGreetingOverlay } from './components/SessionGreeting';
 import { OrderHistory } from './components/OrderHistory';
 import { WorkstationSelector } from './components/WorkstationSelector';
-import { rub } from './utils/format';
+import { rub, variantPrice } from './utils/format';
 
 const DEFAULT_SETTINGS: KioskSettings = {
   idleTimeoutSec: Number(import.meta.env.VITE_IDLE_TIMEOUT_SEC) || 180,
@@ -114,9 +114,10 @@ export default function App() {
     cart.find((x) => x.productId === id && x.selectedSize === size)?.qty ?? 0;
 
   const cartCount = cart.reduce((s, x) => s + x.qty, 0);
-  const cartTotal = cart.reduce(
-    (s, x) => s + x.qty * (productsById[x.productId]?.price ?? 0), 0
-  );
+  const cartTotal = cart.reduce((s, x) => {
+    const pr = productsById[x.productId];
+    return s + x.qty * (pr ? variantPrice(pr, x.selectedSize) : 0);
+  }, 0);
 
   // ── Filtered grid ──────────────────────────────────────────────────────────
   const visible = useMemo(() => {
