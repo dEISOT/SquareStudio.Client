@@ -198,7 +198,7 @@ export default function App() {
   }, [loading, workstationId]);
 
   // ── SignalR (after idle so wake is in scope) ───────────────────────────────
-  useSignalR(
+  const { claimedWorkstations } = useSignalR(
     workstationId,
     (g) => {
       setGreeting(g);
@@ -206,6 +206,7 @@ export default function App() {
       wake();
     },
     endSession,
+    () => flash('Это рабочее место уже занято другим экраном'),
   );
 
   const handleWake = useCallback(() => {
@@ -460,6 +461,7 @@ export default function App() {
         onClose={() => setSelectorOpen(false)}
         workstations={workstations}
         currentId={workstationId}
+        takenIds={claimedWorkstations}
         onSelect={handleSelectWorkstation}
       />
 

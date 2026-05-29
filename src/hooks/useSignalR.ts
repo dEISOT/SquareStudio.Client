@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import * as signalR from '@microsoft/signalr';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'https://localhost:7096';
@@ -30,13 +30,25 @@ export function useSignalR(
   workstationId: number | null,
   onSessionStarted: (greeting: SessionGreeting) => void,
   onSessionEnded: () => void,
-) {
+  onWorkstationTaken?: () => void,
+): { claimedWorkstations: number[] } {
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const workstationIdRef = useRef<number | null>(null);
   const onSessionStartedRef = useRef(onSessionStarted);
   const onSessionEndedRef = useRef(onSessionEnded);
+  const onWorkstationTakenRef = useRef(onWorkstationTaken);
   onSessionStartedRef.current = onSessionStarted;
   onSessionEndedRef.current = onSessionEnded;
+  onWorkstationTakenRef.current = onWorkstationTaken;
+
+  const [claimedWorkstations, setClaimedWorkstations] = useState<number[]>([]);
+
+  const refreshClaimed = useCallback(async () => {
+    const conn = connectionRef.current;
+    if (!conn || conn.state !== signalR.HubConnectionState.Connected) return;
+    const ids = await conn.invoke<number[]>('GetClaimedWorkstations').catch(() => [] as number[]);
+    setClaimedWorkstations(ids);
+  }, []);
 
   const joinWorkstation = useCallback(async (id: number) => {
     const conn = connectionRef.current;
@@ -44,8 +56,12 @@ export function useSignalR(
     if (workstationIdRef.current !== null && workstationIdRef.current !== id) {
       await conn.invoke('LeaveWorkstationGroup', workstationIdRef.current).catch(() => {});
     }
-    await conn.invoke('JoinWorkstationGroup', id).catch(() => {});
-    workstationIdRef.current = id;
+    const ok = await conn.invoke<boolean>('JoinWorkstationGroup', id).catch(() => false);
+    if (ok) {
+      workstationIdRef.current = id;
+    } else {
+      onWorkstationTakenRef.current?.();
+    }
   }, []);
 
   useEffect(() => {
@@ -63,15 +79,23 @@ export function useSignalR(
       onSessionEndedRef.current();
     });
 
+    conn.on('WorkstationStatusChanged', (wsId: number, isClaimed: boolean) => {
+      setClaimedWorkstations((prev) =>
+        isClaimed ? [...prev.filter((x) => x !== wsId), wsId] : prev.filter((x) => x !== wsId)
+      );
+    });
+
     connectionRef.current = conn;
 
-    conn.start().then(() => {
+    conn.start().then(async () => {
+      await refreshClaimed();
       if (workstationId !== null) {
         void joinWorkstation(workstationId);
       }
     }).catch(() => {});
 
-    conn.onreconnected(() => {
+    conn.onreconnected(async () => {
+      await refreshClaimed();
       if (workstationIdRef.current !== null) {
         void joinWorkstation(workstationIdRef.current);
       }
@@ -88,4 +112,6 @@ export function useSignalR(
       void joinWorkstation(workstationId);
     }
   }, [workstationId, joinWorkstation]);
+
+  return { claimedWorkstations };
 }
