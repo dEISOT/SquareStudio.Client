@@ -12,6 +12,7 @@ export interface Product {
   id: number;
   name: string;
   description?: string | null;
+  longDescription?: string | null;
   price: number;
   imageUrl?: string | null;
   videoUrl?: string | null;

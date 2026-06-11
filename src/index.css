@@ -485,7 +485,19 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 .pdp__body       { padding: 36px 36px 32px; display: flex; flex-direction: column; gap: 12px; }
 .pdp__cat  { text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; font-weight: 700; color: var(--navy); }
 .pdp__name { font-size: 32px; letter-spacing: -0.02em; }
-.pdp__desc { font-size: 15px; color: var(--ink); opacity: 0.78; margin-top: 8px; }
+.pdp__desc     { font-size: 15px; color: var(--ink); opacity: 0.78; margin-top: 8px; }
+.pdp__subtitle { font-size: 15px; color: var(--ink); opacity: 0.78; font-weight: 500; }
+.pdp__long-desc {
+  font-size: 14px;
+  color: var(--ink);
+  opacity: 0.82;
+  line-height: 1.65;
+}
+.pdp__long-desc ul { list-style: disc; padding-left: 20px; }
+.pdp__long-desc ol { list-style: decimal; padding-left: 20px; }
+.pdp__long-desc li { margin-bottom: 2px; }
+.pdp__long-desc b, .pdp__long-desc strong { font-weight: 700; }
+.pdp__long-desc i, .pdp__long-desc em { font-style: italic; }
 .pdp__price {
   margin-top: auto;
   font-family: 'JetBrains Mono', monospace;

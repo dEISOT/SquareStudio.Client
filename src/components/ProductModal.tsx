@@ -40,7 +40,13 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
         <div className="pdp__body">
           <div className="pdp__cat">{product.categoryName}</div>
           <h2 className="pdp__name">{product.name}</h2>
-          {product.description && <p className="pdp__desc">{product.description}</p>}
+          {product.description && <p className="pdp__subtitle">{product.description}</p>}
+          {product.longDescription && (
+            <div
+              className="pdp__long-desc"
+              dangerouslySetInnerHTML={{ __html: product.longDescription }}
+            />
+          )}
 
           {hasSizes && (
             <div className="pdp__sizes-section">
@@ -56,9 +62,9 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
                   </button>
                 ))}
               </div>
-              {!selectedSize && (
-                <div className="pdp__sizes-hint">Выберите размер, чтобы добавить в корзину</div>
-              )}
+              <div className="pdp__sizes-hint" style={{ visibility: selectedSize ? 'hidden' : 'visible' }}>
+                Выберите размер, чтобы добавить в корзину
+              </div>
             </div>
           )}
 
@@ -69,9 +75,10 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
               className="btn btn--primary btn--lg"
               disabled={!canAdd}
               onClick={handleAdd}
+              style={{ minWidth: 200 }}
             >
               <Icon name="plus" size={20} />
-              <span>
+              <span style={{ whiteSpace: 'nowrap' }}>
                 {hasSizes && !selectedSize
                   ? 'Выберите размер'
                   : currentQty > 0
