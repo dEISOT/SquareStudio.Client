@@ -249,9 +249,15 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 .rail {
   position: sticky; top: 81px; z-index: 40;
   background: var(--paper);
-  border-bottom: 1px solid var(--line);
   min-width: 0;
-  overflow: hidden;
+}
+.rail::after {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 80px;
+  background: linear-gradient(to right, transparent, var(--paper) 85%);
+  pointer-events: none;
+  z-index: 1;
 }
 
 .rail__scroll {
@@ -262,6 +268,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   overflow-y: hidden;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  border-bottom: 1px solid var(--line);
 }
 .rail__scroll::-webkit-scrollbar { display: none; }
 
