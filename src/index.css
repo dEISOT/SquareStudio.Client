@@ -70,6 +70,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   display: grid;
   grid-template-rows: auto auto 1fr;
   background: var(--paper);
+  overflow-x: clip;
 }
 
 .page {
@@ -265,6 +266,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   font-weight: 600;
   font-size: 14px;
   white-space: nowrap;
+  flex-shrink: 0;
   color: var(--ink);
   transition: all 120ms;
 }
