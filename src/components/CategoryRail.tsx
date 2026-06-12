@@ -12,17 +12,19 @@ export function CategoryRail({ categories, active, onPick, counts }: CategoryRai
 
   return (
     <nav className="rail" aria-label="Категории">
-      <div className="rail__inner">
-        {all.map((c) => (
-          <button
-            key={c.id}
-            className={`pill ${active === c.id ? 'is-active' : ''}`}
-            onClick={() => onPick(c.id as number | 'all')}
-          >
-            <span>{c.name}</span>
-            <span className="pill__count">{counts[String(c.id)] ?? 0}</span>
-          </button>
-        ))}
+      <div className="rail__scroll">
+        <div className="rail__inner">
+          {all.map((c) => (
+            <button
+              key={c.id}
+              className={`pill${active === c.id ? ' is-active' : ''}`}
+              onClick={() => onPick(c.id as number | 'all')}
+            >
+              <span>{c.name}</span>
+              <span className="pill__count">{counts[String(c.id)] ?? 0}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </nav>
   );
