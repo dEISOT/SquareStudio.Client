@@ -40,6 +40,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 html, body, #root { height: 100%; }
+html { overflow-x: hidden; }
 
 body {
   font-family: 'Manrope', 'Helvetica Neue', system-ui, sans-serif;
@@ -70,7 +71,6 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   display: grid;
   grid-template-rows: auto auto 1fr;
   background: var(--paper);
-  overflow-x: clip;
 }
 
 .page {
@@ -248,6 +248,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 }
 
 .rail__inner {
+  width: 100%;
   max-width: 1600px;
   margin: 0 auto;
   padding: 14px 40px;
