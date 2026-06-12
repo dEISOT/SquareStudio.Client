@@ -38,9 +38,8 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html, body { margin: 0; padding: 0; overflow: hidden; }
 html, body, #root { height: 100%; }
-html { overflow-x: hidden; }
 
 body {
   font-family: 'Manrope', 'Helvetica Neue', system-ui, sans-serif;
@@ -67,10 +66,12 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 /* ── App scaffold ──────────────────────────────────────────────────────────── */
 
 .app {
-  min-height: 100%;
+  height: 100%;
   display: grid;
   grid-template-rows: auto auto 1fr;
   background: var(--paper);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .page {
