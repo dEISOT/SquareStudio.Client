@@ -72,7 +72,9 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   background: var(--paper);
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: none;
 }
+.app::-webkit-scrollbar { display: none; }
 
 .page {
   padding: 28px 40px 120px;
