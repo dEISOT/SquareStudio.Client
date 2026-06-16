@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import type { Product } from '../types';
+
+export interface MediaItem {
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  name: string;
+  categoryId?: number | null;
+}
 
 const TONES: [string, string][] = [
   ['#e9e3d6', '#cdc3ad'],
@@ -12,8 +18,9 @@ const TONES: [string, string][] = [
   ['#d4d8e1', '#9ea7bb'],
 ];
 
-function toneForProduct(product: Product): [string, string] {
-  return TONES[(product.categoryId - 1) % TONES.length];
+function toneForItem(item: MediaItem): [string, string] {
+  const idx = item.categoryId != null ? (item.categoryId - 1) : 0;
+  return TONES[Math.abs(idx) % TONES.length];
 }
 
 function initials(name: string): string {
@@ -49,12 +56,12 @@ function PdpVideo({ videoUrl, imageUrl }: { videoUrl: string; imageUrl?: string 
 }
 
 interface PhotoSlotProps {
-  product: Product;
+  item: MediaItem;
   size?: 'card' | 'pdp' | 'line';
 }
 
-export function PhotoSlot({ product, size = 'card' }: PhotoSlotProps) {
-  const { imageUrl, videoUrl } = product;
+export function PhotoSlot({ item, size = 'card' }: PhotoSlotProps) {
+  const { imageUrl, videoUrl } = item;
 
   if (videoUrl && size === 'pdp') {
     return <PdpVideo videoUrl={videoUrl} imageUrl={imageUrl} />;
@@ -73,7 +80,7 @@ export function PhotoSlot({ product, size = 'card' }: PhotoSlotProps) {
     );
   }
 
-  const [a, b] = toneForProduct(product);
+  const [a, b] = toneForItem(item);
 
   return (
     <div
@@ -81,7 +88,7 @@ export function PhotoSlot({ product, size = 'card' }: PhotoSlotProps) {
       style={{ background: `linear-gradient(135deg, ${a} 0%, ${b} 100%)` }}
     >
       <div className="photo__stripes" aria-hidden="true" />
-      <div className="photo__mono">{initials(product.name)}</div>
+      <div className="photo__mono">{initials(item.name)}</div>
       {videoUrl && size === 'card' && (
         <div className="photo__play" aria-hidden="true">▶</div>
       )}

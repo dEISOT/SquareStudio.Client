@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import type { Category, Product, Workstation, CartItem, Order, KioskSettings, Ad, ActiveSession } from './types';
+import type { Category, Product, Service, Workstation, CartItem, Order, KioskSettings, Ad, ActiveSession } from './types';
 import { fetchCategories } from './api/categories';
 import { fetchPublishedProducts } from './api/products';
+import { fetchServices } from './api/services';
 import { fetchWorkstations } from './api/workstations';
 import { createOrder, fetchOrder } from './api/orders';
 import { fetchKioskSettings } from './api/settings';
@@ -15,6 +16,8 @@ import { Header } from './components/Header';
 import { CategoryRail } from './components/CategoryRail';
 import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
+import { ServiceCard } from './components/ServiceCard';
+import { ServiceModal } from './components/ServiceModal';
 import { CartDrawer } from './components/CartDrawer';
 import { Checkout } from './components/Checkout';
 import { OrdersOverlay } from './components/OrdersOverlay';
@@ -37,6 +40,7 @@ export default function App() {
   // ── Data ───────────────────────────────────────────────────────────────────
   const [categories, setCategories]     = useState<Category[]>([]);
   const [products, setProducts]         = useState<Product[]>([]);
+  const [services, setServices]         = useState<Service[]>([]);
   const [workstations, setWorkstations] = useState<Workstation[]>([]);
   const [settings, setSettings]         = useState<KioskSettings>(DEFAULT_SETTINGS);
   const [ads, setAds]                   = useState<Ad[]>([]);
@@ -46,12 +50,14 @@ export default function App() {
     Promise.all([
       fetchCategories().catch(() => [] as Category[]),
       fetchPublishedProducts().catch(() => [] as Product[]),
+      fetchServices().catch(() => [] as Service[]),
       fetchWorkstations().catch(() => [] as Workstation[]),
       fetchKioskSettings().catch(() => null),
       fetchPublishedAds().catch(() => [] as Ad[]),
-    ]).then(([cats, prods, wss, s, adList]) => {
+    ]).then(([cats, prods, svcs, wss, s, adList]) => {
       setCategories(cats);
       setProducts(prods);
+      setServices(svcs);
       setWorkstations(wss);
       if (s) setSettings(s);
       setAds(adList);
@@ -63,6 +69,7 @@ export default function App() {
   const [activeCat, setActiveCat]       = useState<number | 'all'>('all');
   const [query, setQuery]               = useState('');
   const [openProduct, setOpenProduct]   = useState<Product | null>(null);
+  const [openService, setOpenService]   = useState<Service | null>(null);
   const [cartOpen, setCartOpen]         = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [ordersOpen, setOrdersOpen]     = useState(false);
@@ -75,6 +82,11 @@ export default function App() {
   const productsById = useMemo<Record<number, Product>>(
     () => Object.fromEntries(products.map((p) => [p.id, p])),
     [products]
+  );
+
+  const servicesById = useMemo<Record<number, Service>>(
+    () => Object.fromEntries(services.map((s) => [s.id, s])),
+    [services]
   );
 
   const { toast, flash } = useToast();
@@ -113,9 +125,37 @@ export default function App() {
   const qtyOf = (id: number, size?: string) =>
     cart.find((x) => x.productId === id && x.selectedSize === size)?.qty ?? 0;
 
+  const addServiceToCart = useCallback((id: number) => {
+    setCart((c) => {
+      const i = c.findIndex((x) => x.serviceId === id);
+      if (i === -1) return [...c, { serviceId: id, qty: 1 }];
+      const copy = [...c];
+      copy[i] = { ...copy[i], qty: copy[i].qty + 1 };
+      return copy;
+    });
+    flash('Услуга добавлена в заказ');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const incServiceCart = useCallback((id: number) =>
+    setCart((c) => c.map((x) => x.serviceId === id ? { ...x, qty: x.qty + 1 } : x)), []);
+
+  const decServiceCart = useCallback((id: number) =>
+    setCart((c) => c.flatMap((x) => x.serviceId === id
+      ? x.qty > 1 ? [{ ...x, qty: x.qty - 1 }] : []
+      : [x]
+    )), []);
+
+  const removeServiceFromCart = useCallback((id: number) =>
+    setCart((c) => c.filter((x) => x.serviceId !== id)), []);
+
   const cartCount = cart.reduce((s, x) => s + x.qty, 0);
   const cartTotal = cart.reduce((s, x) => {
-    const pr = productsById[x.productId];
+    if (x.serviceId != null) {
+      const svc = servicesById[x.serviceId];
+      return s + x.qty * (svc?.cost ?? 0);
+    }
+    const pr = productsById[x.productId!];
     return s + x.qty * (pr ? variantPrice(pr, x.selectedSize) : 0);
   }, 0);
 
@@ -125,30 +165,43 @@ export default function App() {
     return products.filter((p) => {
       if (activeCat !== 'all' && p.categoryId !== activeCat) return false;
       if (!q) return true;
-      return (
-        p.name.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q)
-      );
+      return p.name.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
     });
   }, [products, activeCat, query]);
+
+  const visibleServices = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return services.filter((s) => {
+      if (activeCat !== 'all' && s.categoryId !== activeCat) return false;
+      if (!q) return true;
+      return s.name.toLowerCase().includes(q) || s.description?.toLowerCase().includes(q);
+    });
+  }, [services, activeCat, query]);
 
   const groupedByCat = useMemo(() => {
     if (activeCat !== 'all') return null;
     return categories
       .map((cat) => ({
         cat,
-        items: visible.filter((p) => p.categoryId === cat.id),
+        products: visible.filter((p) => p.categoryId === cat.id),
+        services: visibleServices.filter((s) => s.categoryId === cat.id),
       }))
-      .filter((g) => g.items.length > 0);
-  }, [visible, activeCat, categories]);
+      .filter((g) => g.products.length > 0 || g.services.length > 0);
+  }, [visible, visibleServices, activeCat, categories]);
 
   const categoryCounts = useMemo(() => {
-    const m: Record<string, number> = { all: products.length };
+    const m: Record<string, number> = {};
+    let total = 0;
     for (const p of products) {
       m[String(p.categoryId)] = (m[String(p.categoryId)] ?? 0) + 1;
+      total++;
     }
-    return m;
-  }, [products]);
+    for (const s of services) {
+      if (s.categoryId != null) m[String(s.categoryId)] = (m[String(s.categoryId)] ?? 0) + 1;
+      total++;
+    }
+    return { ...m, all: total };
+  }, [products, services]);
 
   // ── Workstation ────────────────────────────────────────────────────────────
   const [workstationId, setWorkstationId] = useState<number | null>(() => {
@@ -271,6 +324,7 @@ export default function App() {
         sessionId: session?.sessionId ?? undefined,
         items: cart.map((it) => ({
           productId: it.productId,
+          serviceId: it.serviceId,
           quantity: it.qty,
           size: it.selectedSize,
         })),
@@ -341,12 +395,12 @@ export default function App() {
                     className="sect__more"
                     onClick={() => setActiveCat(g.cat.id)}
                   >
-                    Все {g.items.length}{' '}
+                    Все {g.products.length + g.services.length}{' '}
                     <Icon name="chev" size={14} />
                   </button>
                 </header>
                 <div className="grid">
-                  {g.items.slice(0, 8).map((p) => (
+                  {g.products.slice(0, 8).map((p) => (
                     <ProductCard
                       key={p.id}
                       product={p}
@@ -357,6 +411,14 @@ export default function App() {
                       onDec={(size) => decCart(p.id, size)}
                     />
                   ))}
+                  {g.services.slice(0, 8).map((s) => (
+                    <ServiceCard
+                      key={`svc-${s.id}`}
+                      service={s}
+                      onOpen={() => setOpenService(s)}
+                      onAdd={session ? () => addServiceToCart(s.id) : undefined}
+                    />
+                  ))}
                 </div>
               </section>
             ))
@@ -365,9 +427,9 @@ export default function App() {
           <section className="sect">
             <header className="sect__head">
               <h2 className="sect__title">{categoryName(activeCat as number)}</h2>
-              <span className="sect__count">{visible.length} позиций</span>
+              <span className="sect__count">{visible.length + visibleServices.length} позиций</span>
             </header>
-            {visible.length === 0 ? (
+            {visible.length === 0 && visibleServices.length === 0 ? (
               <EmptyState query={query} onClear={() => setQuery('')} />
             ) : (
               <div className="grid">
@@ -380,6 +442,14 @@ export default function App() {
                     onAdd={(size) => addToCart(p.id, size)}
                     onInc={(size) => incCart(p.id, size)}
                     onDec={(size) => decCart(p.id, size)}
+                  />
+                ))}
+                {visibleServices.map((s) => (
+                  <ServiceCard
+                    key={`svc-${s.id}`}
+                    service={s}
+                    onOpen={() => setOpenService(s)}
+                    onAdd={session ? () => addServiceToCart(s.id) : undefined}
                   />
                 ))}
               </div>
@@ -407,14 +477,24 @@ export default function App() {
         onClose={() => setOpenProduct(null)}
       />
 
+      <ServiceModal
+        service={openService}
+        onClose={() => setOpenService(null)}
+        onAdd={session && openService ? () => addServiceToCart(openService.id) : undefined}
+      />
+
       <CartDrawer
         open={cartOpen}
         items={cart}
         productsById={productsById}
+        servicesById={servicesById}
         onClose={() => setCartOpen(false)}
         onInc={incCart}
         onDec={decCart}
         onRemove={removeFromCart}
+        onIncSvc={incServiceCart}
+        onDecSvc={decServiceCart}
+        onRemoveSvc={removeServiceFromCart}
         onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }}
       />
 
@@ -422,6 +502,7 @@ export default function App() {
         open={checkoutOpen}
         items={cart}
         productsById={productsById}
+        servicesById={servicesById}
         workstations={workstations}
         onCancel={() => { setCheckoutOpen(false); setCartOpen(true); }}
         onSubmit={handleSubmitOrder}

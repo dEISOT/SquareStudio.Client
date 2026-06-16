@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { CartItem, Product } from '../types';
+import type { CartItem, Product, Service } from '../types';
 import { cartKey } from '../types';
 import { Icon } from './Icon';
 import { PhotoSlot } from './PhotoSlot';
@@ -9,10 +9,14 @@ interface CartDrawerProps {
   open: boolean;
   items: CartItem[];
   productsById: Record<number, Product>;
+  servicesById: Record<number, Service>;
   onClose: () => void;
   onInc: (id: number, size?: string) => void;
   onDec: (id: number, size?: string) => void;
   onRemove: (id: number, size?: string) => void;
+  onIncSvc: (id: number) => void;
+  onDecSvc: (id: number) => void;
+  onRemoveSvc: (id: number) => void;
   onCheckout: () => void;
 }
 
@@ -20,14 +24,22 @@ export function CartDrawer({
   open,
   items,
   productsById,
+  servicesById,
   onClose,
   onInc,
   onDec,
   onRemove,
+  onIncSvc,
+  onDecSvc,
+  onRemoveSvc,
   onCheckout,
 }: CartDrawerProps) {
   const total = items.reduce((s, it) => {
-    const pr = productsById[it.productId];
+    if (it.serviceId != null) {
+      const svc = servicesById[it.serviceId];
+      return s + it.qty * (svc?.cost ?? 0);
+    }
+    const pr = productsById[it.productId!];
     return s + it.qty * (pr ? variantPrice(pr, it.selectedSize) : 0);
   }, 0);
   const count = items.reduce((s, it) => s + it.qty, 0);
@@ -72,12 +84,50 @@ export function CartDrawer({
           <>
             <ul className="drawer__list">
               {items.map((it) => {
-                const pr = productsById[it.productId];
+                const key = cartKey(it);
+
+                if (it.serviceId != null) {
+                  const svc = servicesById[it.serviceId];
+                  if (!svc) return null;
+                  return (
+                    <li key={key} className="line">
+                      <PhotoSlot item={svc} size="line" />
+                      <div className="line__body">
+                        <div className="line__top">
+                          <div>
+                            <div className="line__name">{svc.name}</div>
+                            <div className="line__sub">Услуга</div>
+                          </div>
+                          <button
+                            className="line__x"
+                            onClick={() => onRemoveSvc(svc.id)}
+                            aria-label="Удалить"
+                          >
+                            <Icon name="close" size={16} />
+                          </button>
+                        </div>
+                        <div className="line__bot">
+                          <div className="qty qty--sm">
+                            <button className="qty__btn" onClick={() => onDecSvc(svc.id)}>
+                              <Icon name="minus" size={16} />
+                            </button>
+                            <span className="qty__n">{it.qty}</span>
+                            <button className="qty__btn" onClick={() => onIncSvc(svc.id)}>
+                              <Icon name="plus" size={16} />
+                            </button>
+                          </div>
+                          <div className="line__price">{rub(svc.cost * it.qty)}</div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                }
+
+                const pr = productsById[it.productId!];
                 if (!pr) return null;
-                const key = cartKey(it.productId, it.selectedSize);
                 return (
                   <li key={key} className="line">
-                    <PhotoSlot product={pr} size="line" />
+                    <PhotoSlot item={pr} size="line" />
                     <div className="line__body">
                       <div className="line__top">
                         <div>
@@ -88,7 +138,7 @@ export function CartDrawer({
                         </div>
                         <button
                           className="line__x"
-                          onClick={() => onRemove(it.productId, it.selectedSize)}
+                          onClick={() => onRemove(pr.id, it.selectedSize)}
                           aria-label="Удалить"
                         >
                           <Icon name="close" size={16} />
@@ -98,14 +148,14 @@ export function CartDrawer({
                         <div className="qty qty--sm">
                           <button
                             className="qty__btn"
-                            onClick={() => onDec(it.productId, it.selectedSize)}
+                            onClick={() => onDec(pr.id, it.selectedSize)}
                           >
                             <Icon name="minus" size={16} />
                           </button>
                           <span className="qty__n">{it.qty}</span>
                           <button
                             className="qty__btn"
-                            onClick={() => onInc(it.productId, it.selectedSize)}
+                            onClick={() => onInc(pr.id, it.selectedSize)}
                           >
                             <Icon name="plus" size={16} />
                           </button>

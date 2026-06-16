@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { CartItem, Product, Workstation } from '../types';
+import type { CartItem, Product, Service, Workstation } from '../types';
 import { cartKey } from '../types';
 import { Icon } from './Icon';
 import { rub, variantPrice } from '../utils/format';
@@ -8,6 +8,7 @@ interface CheckoutProps {
   open: boolean;
   items: CartItem[];
   productsById: Record<number, Product>;
+  servicesById: Record<number, Service>;
   workstations: Workstation[];
   onCancel: () => void;
   onSubmit: (data: { name: string; workstationId: number; note: string }) => void;
@@ -20,6 +21,7 @@ export function Checkout({
   open,
   items,
   productsById,
+  servicesById,
   workstations,
   onCancel,
   onSubmit,
@@ -49,7 +51,11 @@ export function Checkout({
   if (!open) return null;
 
   const total = items.reduce((s, it) => {
-    const pr = productsById[it.productId];
+    if (it.serviceId != null) {
+      const svc = servicesById[it.serviceId];
+      return s + it.qty * (svc?.cost ?? 0);
+    }
+    const pr = productsById[it.productId!];
     return s + it.qty * (pr ? variantPrice(pr, it.selectedSize) : 0);
   }, 0);
   const count = items.reduce((s, it) => s + it.qty, 0);
@@ -157,9 +163,23 @@ export function Checkout({
               <h2 className="summary__title">Ваш заказ</h2>
               <ul className="summary__list">
                 {items.map((it) => {
-                  const pr = productsById[it.productId];
+                  const key = cartKey(it);
+                  if (it.serviceId != null) {
+                    const svc = servicesById[it.serviceId];
+                    if (!svc) return null;
+                    return (
+                      <li key={key} className="summary__line">
+                        <span className="summary__qty">{it.qty}×</span>
+                        <span className="summary__name">
+                          {svc.name}
+                          <span className="summary__size"> · услуга</span>
+                        </span>
+                        <span className="summary__price">{rub(svc.cost * it.qty)}</span>
+                      </li>
+                    );
+                  }
+                  const pr = productsById[it.productId!];
                   if (!pr) return null;
-                  const key = cartKey(it.productId, it.selectedSize);
                   return (
                     <li key={key} className="summary__line">
                       <span className="summary__qty">{it.qty}×</span>
@@ -170,7 +190,7 @@ export function Checkout({
                         )}
                       </span>
                       <span className="summary__price">
-                        {rub(pr.price * it.qty)}
+                        {rub(variantPrice(pr, it.selectedSize) * it.qty)}
                       </span>
                     </li>
                   );

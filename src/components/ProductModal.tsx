@@ -21,6 +21,7 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
   const canAdd   = !hasSizes || selectedSize !== undefined;
   const displayPrice = variantPrice(product, selectedSize);
   const currentQty = qtyInCart(selectedSize);
+  const showFrom = !selectedSize && product.variants.some(v => v.price != null && v.price !== product.price);
 
   const handleClose = () => {
     setSelectedSize(undefined);
@@ -35,8 +36,13 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
 
   return (
     <Modal open onClose={handleClose} size="lg" label={product.name}>
+      <div className="pdp__close-anchor">
+        <button className="pdp__close" onClick={handleClose} aria-label="Закрыть">
+          <Icon name="close" size={22} />
+        </button>
+      </div>
       <div className="pdp">
-        <PhotoSlot product={product} size="pdp" />
+        <PhotoSlot item={product} size="pdp" />
         <div className="pdp__body">
           <div className="pdp__cat">{product.categoryName}</div>
           <h2 className="pdp__name">{product.name}</h2>
@@ -49,7 +55,7 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
           )}
 
           {hasSizes && (
-            <div className="pdp__sizes-section">
+            <div className="pdp__sizes-section pdp__sizes-section--pulse" key={product.id}>
               <div className="pdp__sizes-label">Вариант</div>
               <div className="pdp__sizes">
                 {product.variants.map((v) => (
@@ -63,12 +69,12 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
                 ))}
               </div>
               <div className="pdp__sizes-hint" style={{ visibility: selectedSize ? 'hidden' : 'visible' }}>
-                Выберите размер, чтобы добавить в корзину
+                Пожалуйста, выберите вариант
               </div>
             </div>
           )}
 
-          <div className="pdp__price">{rub(displayPrice)}</div>
+          <div className="pdp__price">{showFrom && <span className="pdp__price-from">От </span>}{rub(displayPrice)}</div>
 
           <div className="pdp__cta">
             <button
@@ -91,10 +97,6 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
             </button>
           </div>
         </div>
-
-        <button className="pdp__close" onClick={handleClose} aria-label="Закрыть">
-          <Icon name="close" size={22} />
-        </button>
       </div>
     </Modal>
   );

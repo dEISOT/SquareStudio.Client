@@ -22,6 +22,19 @@ export interface Product {
   variants: ProductVariant[];
 }
 
+export interface Service {
+  id: number;
+  name: string;
+  description?: string | null;
+  longDescription?: string | null;
+  cost: number;
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  categoryId?: number | null;
+  categoryName: string;
+  masterIds: number[];
+}
+
 export interface Workstation {
   id: number;
   name: string;
@@ -29,7 +42,8 @@ export interface Workstation {
 }
 
 export interface OrderItemRequest {
-  productId: number;
+  productId?: number;
+  serviceId?: number;
   quantity: number;
   size?: string;
 }
@@ -45,8 +59,10 @@ export interface CreateOrderPayload {
 export interface OrderItemDto {
   id: number;
   orderId: number;
-  productId: number;
-  productName: string;
+  productId?: number | null;
+  productName?: string | null;
+  serviceId?: number | null;
+  serviceName?: string | null;
   quantity: number;
   unitPrice: number;
   subtotal: number;
@@ -89,14 +105,16 @@ export interface AdSlide {
 }
 
 export interface CartItem {
-  productId: number;
+  productId?: number;
+  serviceId?: number;
   qty: number;
   selectedSize?: string;
 }
 
 /** Stable string key for a cart line — used as React key and for lookups */
-export function cartKey(productId: number, size?: string): string {
-  return size ? `${productId}:${size}` : String(productId);
+export function cartKey(item: CartItem): string {
+  if (item.serviceId != null) return `svc:${item.serviceId}`;
+  return item.selectedSize ? `${item.productId}:${item.selectedSize}` : String(item.productId);
 }
 
 export interface SessionHistoryItem {

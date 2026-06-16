@@ -22,6 +22,7 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
   const currentQty = qtyInCart(selectedSize);
   const canAdd = !hasVariants || selectedSize !== undefined;
   const displayPrice = variantPrice(product, selectedSize);
+  const showFrom = !selectedSize && product.variants.some(v => v.price != null && v.price !== product.price);
 
   const handleSizePick = (e: React.MouseEvent, name: string) => {
     stop(e);
@@ -30,7 +31,7 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
 
   return (
     <article className="card" onClick={onOpen} role="button" tabIndex={0}>
-      <PhotoSlot product={product} size="card" />
+      <PhotoSlot item={product} size="card" />
       <div className="card__body">
         <div className="card__head">
           <h3 className="card__name">{product.name}</h3>
@@ -52,7 +53,7 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
         )}
 
         <div className="card__foot">
-          <span className="card__price">{rub(displayPrice)}</span>
+          <span className="card__price">{showFrom && <span className="card__price-from">От </span>}{rub(displayPrice)}</span>
           {currentQty > 0 && canAdd ? (
             <div className="qty" onClick={stop}>
               <button className="qty__btn" onClick={() => onDec(selectedSize)} aria-label="Убрать одну">
@@ -65,10 +66,8 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
             </div>
           ) : (
             <button
-              className={`add ${!canAdd ? 'add--disabled' : ''}`}
-              disabled={!canAdd}
-              onClick={(e) => { stop(e); if (canAdd) onAdd(selectedSize); }}
-              title={hasVariants && !selectedSize ? 'Выберите вариант' : undefined}
+              className="add"
+              onClick={(e) => { stop(e); if (canAdd) onAdd(selectedSize); else onOpen(); }}
             >
               <Icon name="plus" size={18} />
               <span>{hasVariants && !selectedSize ? 'Выберите' : 'В корзину'}</span>
