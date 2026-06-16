@@ -88,11 +88,11 @@ export function OrderStatus({ order, productsById, onClose, onCancel }: OrderSta
             <h3>Состав заказа</h3>
             <ul>
               {order.orderItems.map((it) => {
-                const pr = productsById[it.productId];
+                const pr = it.productId != null ? productsById[it.productId] : undefined;
                 return (
                   <li key={it.id}>
                     {pr ? (
-                      <PhotoSlot product={pr} size="line" />
+                      <PhotoSlot item={pr} size="line" />
                     ) : (
                       <div className="photo photo--line photo--placeholder" style={{ background: '#e5e7eb' }} />
                     )}

@@ -25,7 +25,7 @@ function orderToHistoryRow(o: Order): SessionHistoryOrder {
     date: formatBelarusDate(o.createTime),
     total: o.totalAmount,
     items: o.orderItems.map((oi) => ({
-      name: oi.productName,
+      name: oi.productName ?? '',
       qty: oi.quantity,
       price: oi.unitPrice,
     })),
