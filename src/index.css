@@ -983,8 +983,6 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   .wifi { display: none; }
   .checkout { grid-template-columns: 1fr; }
   .summary { position: static; }
-  .pdp { grid-template-columns: 1fr; }
-  .pdp .photo--pdp { aspect-ratio: 16 / 9; }
   .status__meta { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -1007,6 +1005,8 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   .card__price { font-size: 14px; }
   .add span { display: none; }
   .add { padding: 9px; }
+  .pdp { grid-template-columns: 1fr; }
+  .pdp .photo--pdp { aspect-ratio: 16 / 9; }
   .drawer { width: 100vw; }
   .scrim { padding: 16px; }
   .checkout__form { padding: 20px; }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Order, Product } from '../types';
 import { Icon } from './Icon';
 import { PhotoSlot } from './PhotoSlot';
@@ -157,6 +157,12 @@ function OrderDetail({ order, productsById, onBack, onCancel, onContinue }: {
 
 export function OrdersOverlay({ orders, productsById, initialViewingId, onClose, onCancel }: Props) {
   const [viewingId, setViewingId] = useState<number | null>(initialViewingId ?? null);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
 
   const viewing = viewingId != null ? (orders.find((o) => o.id === viewingId) ?? null) : null;
 

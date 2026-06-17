@@ -40,10 +40,13 @@ export function Checkout({
       setWs('');
       setNote('');
       setTouched(false);
-    } else {
-      setName(prefillName ?? '');
-      setWs(prefillWorkstationId ? String(prefillWorkstationId) : '');
+      return;
     }
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    setName(prefillName ?? '');
+    setWs(prefillWorkstationId ? String(prefillWorkstationId) : '');
+    return () => { document.body.style.overflow = prev; };
   // prefillName/prefillWorkstationId are captured at open time — deps intentional
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);

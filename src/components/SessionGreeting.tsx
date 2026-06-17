@@ -107,8 +107,12 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
             lineHeight: 0.9,
             letterSpacing: '-0.04em',
             marginBottom: '2rem',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
           }}>
-            {greeting.clientName || 'Гость'}
+            {(greeting.clientName || 'Гость').split(' ')[0]}
           </div>
           <div style={{
             fontSize: 'clamp(1.125rem, 2vw, 1.75rem)', fontWeight: 400,
