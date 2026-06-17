@@ -34,6 +34,10 @@ export function Checkout({
   const [note, setNote] = useState('');
   const [touched, setTouched] = useState(false);
 
+  const NAME_MAX = 50;
+  const ALLOWED = /[^а-яёА-ЯЁa-zA-Z\s\-']/g;
+  const handleNameChange = (raw: string) => setName(raw.replace(ALLOWED, '').slice(0, NAME_MAX));
+
   useEffect(() => {
     if (!open) {
       setName('');
@@ -105,12 +109,15 @@ export function Checkout({
                 className="field__input"
                 placeholder="Как к вам обращаться?"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => handleNameChange(e.target.value)}
                 onBlur={() => setTouched(true)}
+                maxLength={NAME_MAX}
+                autoComplete="given-name"
               />
-              {touched && name.trim().length < 2 && (
-                <span className="field__err">Введите имя</span>
-              )}
+              {touched && name.trim().length < 2
+                ? <span className="field__err">Введите имя (минимум 2 символа)</span>
+                : <span className="field__hint">Только буквы, пробел, дефис</span>
+              }
             </label>
 
             <label className="field">
