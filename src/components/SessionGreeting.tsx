@@ -31,9 +31,12 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
     const el = nameRef.current;
     if (!el) return;
     const fit = () => {
-      el.style.fontSize = '';
-      const ratio = el.parentElement!.clientWidth / el.scrollWidth;
-      if (ratio < 1) el.style.fontSize = `${parseFloat(getComputedStyle(el).fontSize) * ratio * 0.97}px`;
+      el.style.fontSize = '';            // clear any previous override → falls back to CSS .greeting-name clamp
+      const containerWidth = el.parentElement!.clientWidth;
+      if (!containerWidth) return;       // layout not ready yet — ResizeObserver will re-fire
+      if (el.scrollWidth <= containerWidth) return; // fits fine, leave clamp as-is
+      const base = parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize = `${base * (containerWidth / el.scrollWidth) * 0.97}px`;
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -63,6 +66,7 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
           50%       { opacity: 0.35; }
         }
         .greeting-root { animation: fadeInGreeting 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        .greeting-name  { font-size: clamp(6rem, 20vw, 16rem); }
       `}</style>
 
       <div
@@ -118,8 +122,8 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
           </div>
           <div
             ref={nameRef}
+            className="greeting-name"
             style={{
-              fontSize: 'clamp(6rem, 20vw, 16rem)',
               fontWeight: 800,
               color: '#ffffff',
               lineHeight: 0.9,
