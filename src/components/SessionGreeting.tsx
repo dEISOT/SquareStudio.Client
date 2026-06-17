@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { SessionGreeting } from '../hooks/useSignalR';
 
 interface SessionGreetingProps {
@@ -14,8 +14,6 @@ function fmtTime(date: Date): string {
 
 export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingProps) {
   const [now, setNow] = useState(() => new Date());
-  const nameRef = useRef<HTMLDivElement>(null);
-  const displayName = (greeting.clientName || 'Гость').split(' ')[0];
 
   useEffect(() => {
     const t = setTimeout(onDismiss, AUTO_DISMISS_MS);
@@ -27,22 +25,6 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const el = nameRef.current;
-    if (!el) return;
-    const fit = () => {
-      el.style.fontSize = '';            // clear any previous override → falls back to CSS .greeting-name clamp
-      const containerWidth = el.parentElement!.clientWidth;
-      if (!containerWidth) return;       // layout not ready yet — ResizeObserver will re-fire
-      if (el.scrollWidth <= containerWidth) return; // fits fine, leave clamp as-is
-      const base = parseFloat(getComputedStyle(el).fontSize);
-      el.style.fontSize = `${base * (containerWidth / el.scrollWidth) * 0.97}px`;
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    ro.observe(el.parentElement!);
-    return () => ro.disconnect();
-  }, [displayName]);
 
   return (
     <div
@@ -66,7 +48,6 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
           50%       { opacity: 0.35; }
         }
         .greeting-root { animation: fadeInGreeting 0.5s cubic-bezier(0.16,1,0.3,1) both; }
-        .greeting-name  { font-size: clamp(6rem, 20vw, 16rem); }
       `}</style>
 
       <div
@@ -120,20 +101,19 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
           }}>
             Добрый день,
           </div>
-          <div
-            ref={nameRef}
-            className="greeting-name"
-            style={{
-              fontWeight: 800,
-              color: '#ffffff',
-              lineHeight: 0.9,
-              letterSpacing: '-0.04em',
-              marginBottom: '2rem',
-              whiteSpace: 'nowrap',
-              maxWidth: '100%',
-            }}
-          >
-            {displayName}
+          <div style={{
+            fontSize: 'clamp(6rem, 20vw, 16rem)',
+            fontWeight: 800,
+            color: '#ffffff',
+            lineHeight: 0.9,
+            letterSpacing: '-0.04em',
+            marginBottom: '2rem',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            maxWidth: '100%',
+          }}>
+            {(greeting.clientName || 'Гость').split(' ')[0]}
           </div>
           <div style={{
             fontSize: 'clamp(1.125rem, 2vw, 1.75rem)', fontWeight: 400,
