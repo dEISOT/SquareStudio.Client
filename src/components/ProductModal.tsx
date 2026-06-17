@@ -44,57 +44,59 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
       <div className="pdp">
         <PhotoSlot item={product} size="pdp" />
         <div className="pdp__body">
-          <div className="pdp__cat">{product.categoryName}</div>
-          <h2 className="pdp__name">{product.name}</h2>
-          {product.description && <p className="pdp__subtitle">{product.description}</p>}
-          {product.longDescription && (
-            <div
-              className="pdp__long-desc"
-              dangerouslySetInnerHTML={{ __html: product.longDescription }}
-            />
-          )}
+          <div className="pdp__scroll">
+            <div className="pdp__cat">{product.categoryName}</div>
+            <h2 className="pdp__name">{product.name}</h2>
+            {product.description && <p className="pdp__subtitle">{product.description}</p>}
+            {product.longDescription && (
+              <div
+                className="pdp__long-desc"
+                dangerouslySetInnerHTML={{ __html: product.longDescription }}
+              />
+            )}
+          </div>
 
-          {hasSizes && (
-            <div className="pdp__sizes-section pdp__sizes-section--pulse" key={product.id}>
-              <div className="pdp__sizes-label">Вариант</div>
-              <div className="pdp__sizes">
-                {product.variants.map((v) => (
-                  <button
-                    key={v.name}
-                    className={`size-chip size-chip--lg ${selectedSize === v.name ? 'is-active' : ''}`}
-                    onClick={() => setSelectedSize((prev) => (prev === v.name ? undefined : v.name))}
-                  >
-                    {v.name}
-                  </button>
-                ))}
+          <div className="pdp__foot">
+            {hasSizes && (
+              <div className="pdp__sizes-section pdp__sizes-section--pulse" key={product.id}>
+                <div className="pdp__sizes-label">Вариант</div>
+                <div className="pdp__sizes">
+                  {product.variants.map((v) => (
+                    <button
+                      key={v.name}
+                      className={`size-chip size-chip--lg ${selectedSize === v.name ? 'is-active' : ''}`}
+                      onClick={() => setSelectedSize((prev) => (prev === v.name ? undefined : v.name))}
+                    >
+                      {v.name}
+                    </button>
+                  ))}
+                </div>
+                <div className="pdp__sizes-hint" style={{ visibility: selectedSize ? 'hidden' : 'visible' }}>
+                  Пожалуйста, выберите вариант
+                </div>
               </div>
-              <div className="pdp__sizes-hint" style={{ visibility: selectedSize ? 'hidden' : 'visible' }}>
-                Пожалуйста, выберите вариант
-              </div>
+            )}
+            <div className="pdp__price">{showFrom && <span className="pdp__price-from">От </span>}{rub(displayPrice)}</div>
+            <div className="pdp__cta">
+              <button
+                className="btn btn--primary btn--lg"
+                disabled={!canAdd}
+                onClick={handleAdd}
+                style={{ minWidth: 200 }}
+              >
+                <Icon name="plus" size={20} />
+                <span style={{ whiteSpace: 'nowrap' }}>
+                  {hasSizes && !selectedSize
+                    ? 'Выберите размер'
+                    : currentQty > 0
+                    ? `Добавить ещё (${currentQty} в корзине)`
+                    : 'Добавить в корзину'}
+                </span>
+              </button>
+              <button className="btn btn--ghost btn--lg" onClick={handleClose}>
+                Закрыть
+              </button>
             </div>
-          )}
-
-          <div className="pdp__price">{showFrom && <span className="pdp__price-from">От </span>}{rub(displayPrice)}</div>
-
-          <div className="pdp__cta">
-            <button
-              className="btn btn--primary btn--lg"
-              disabled={!canAdd}
-              onClick={handleAdd}
-              style={{ minWidth: 200 }}
-            >
-              <Icon name="plus" size={20} />
-              <span style={{ whiteSpace: 'nowrap' }}>
-                {hasSizes && !selectedSize
-                  ? 'Выберите размер'
-                  : currentQty > 0
-                  ? `Добавить ещё (${currentQty} в корзине)`
-                  : 'Добавить в корзину'}
-              </span>
-            </button>
-            <button className="btn btn--ghost btn--lg" onClick={handleClose}>
-              Закрыть
-            </button>
           </div>
         </div>
       </div>
