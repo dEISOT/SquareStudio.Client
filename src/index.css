@@ -513,14 +513,30 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
 
 /* ── Product detail (PDP) modal ────────────────────────────────────────────── */
 
+/* Sheet containing a PDP locks its height and delegates scrolling to the body column */
+.sheet:has(.pdp) {
+  overflow: hidden;
+  height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+}
 .pdp {
   position: relative;
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 .pdp .photo--pdp { border-radius: 0; height: 100%; aspect-ratio: unset; width: 100%; overflow: hidden; }
-.pdp__body       { padding: 36px 36px 32px; display: flex; flex-direction: column; gap: 12px; }
+.pdp__body {
+  padding: 36px 36px 32px;
+  display: flex; flex-direction: column; gap: 12px;
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: none;
+}
+.pdp__body::-webkit-scrollbar { display: none; }
 .pdp__cat  { text-transform: uppercase; letter-spacing: 0.12em; font-size: 11px; font-weight: 700; color: var(--navy); }
 .pdp__name { font-size: 32px; letter-spacing: -0.02em; }
 .pdp__desc     { font-size: 15px; color: var(--ink); opacity: 0.78; margin-top: 8px; }
@@ -1005,8 +1021,8 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   .card__price { font-size: 14px; }
   .add span { display: none; }
   .add { padding: 9px; }
-  .pdp { grid-template-columns: 1fr; }
-  .pdp .photo--pdp { aspect-ratio: 16 / 9; }
+  .pdp { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .pdp .photo--pdp { aspect-ratio: 16 / 9; height: auto; }
   .drawer { width: 100vw; }
   .scrim { padding: 16px; }
   .checkout__form { padding: 20px; }
