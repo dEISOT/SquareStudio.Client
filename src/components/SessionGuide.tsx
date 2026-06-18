@@ -29,18 +29,6 @@ interface StepDef {
 const rub = (n: number) =>
   n.toLocaleString('ru-RU', { minimumFractionDigits: 2 }) + ' Br';
 
-function PBtn({ children, primary, danger, ghost }: { children: React.ReactNode; primary?: boolean; danger?: boolean; ghost?: boolean }) {
-  const bg = primary ? NAVY : danger ? '#dc2626' : '#fff';
-  const color = primary || danger ? '#fff' : NAVY;
-  const border = ghost ? `1.5px solid #e2e8f0` : 'none';
-  return (
-    <div style={{
-      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-      background: bg, color, border, borderRadius: 10,
-      padding: '10px 18px', fontSize: 14, fontWeight: 600, cursor: 'default',
-    }}>{children}</div>
-  );
-}
 
 function PTopbar() {
   return (
