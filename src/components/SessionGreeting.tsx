@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { SessionGreeting } from '../hooks/useSignalR';
+import { SessionGuide } from './SessionGuide';
 
 interface SessionGreetingProps {
   greeting: SessionGreeting;
@@ -13,22 +14,35 @@ function fmtTime(date: Date): string {
 }
 
 export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingProps) {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow]           = useState(() => new Date());
+  const [guideOpen, setGuideOpen] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Auto-dismiss: start / stop based on guide state
   useEffect(() => {
-    const t = setTimeout(onDismiss, AUTO_DISMISS_MS);
-    return () => clearTimeout(t);
-  }, [onDismiss]);
+    if (guideOpen) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = null;
+      return;
+    }
+    timerRef.current = setTimeout(onDismiss, AUTO_DISMISS_MS);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [guideOpen, onDismiss]);
 
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 10000);
     return () => clearInterval(interval);
   }, []);
 
+  if (guideOpen) {
+    return <SessionGuide onDismiss={onDismiss} />;
+  }
 
   return (
     <div
-      onClick={onDismiss}
+      onClick={() => setGuideOpen(true)}
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: '#00102e',
@@ -48,6 +62,24 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
           50%       { opacity: 0.35; }
         }
         .greeting-root { animation: fadeInGreeting 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        .greeting-skip {
+          background: rgba(255,255,255,0.08);
+          border: 1.5px solid rgba(255,255,255,0.15);
+          color: rgba(255,255,255,0.7);
+          border-radius: 24px;
+          padding: 10px 22px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          letter-spacing: 0.01em;
+          transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .greeting-skip:hover {
+          background: rgba(255,255,255,0.14);
+          border-color: rgba(255,255,255,0.3);
+          color: rgba(255,255,255,0.95);
+        }
       `}</style>
 
       <div
@@ -73,22 +105,32 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
             </div>
           </div>
 
-          {/* Session indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: '#22c55e',
-              display: 'inline-block',
-              animation: 'pulse 2.5s ease-in-out infinite',
-            }} />
-            <span style={{
-              fontSize: '0.8125rem', fontWeight: 600,
-              color: 'rgba(255,255,255,0.5)',
-              letterSpacing: '0.06em',
-              fontVariantNumeric: 'tabular-nums',
-            }}>
-              СЕССИЯ · {fmtTime(now)}
-            </span>
+          {/* Skip + session indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+            {/* Пропустить stops event so it doesn't also open the guide */}
+            <button
+              className="greeting-skip"
+              onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+            >
+              Пропустить
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: '#22c55e',
+                display: 'inline-block',
+                animation: 'pulse 2.5s ease-in-out infinite',
+              }} />
+              <span style={{
+                fontSize: '0.8125rem', fontWeight: 600,
+                color: 'rgba(255,255,255,0.5)',
+                letterSpacing: '0.06em',
+                fontVariantNumeric: 'tabular-nums',
+              }}>
+                СЕССИЯ · {fmtTime(now)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -136,7 +178,7 @@ export function SessionGreetingOverlay({ greeting, onDismiss }: SessionGreetingP
               animation: 'pulse 2s ease-in-out infinite',
             }} />
             <span style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.55)', fontWeight: 500 }}>
-              Коснитесь экрана, чтобы открыть меню
+              Нажмите, чтобы узнать, как пользоваться меню заказа
             </span>
           </div>
           <span style={{
