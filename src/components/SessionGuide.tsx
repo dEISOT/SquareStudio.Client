@@ -1,14 +1,17 @@
 import { useState } from 'react';
+import product1 from '../../design/guide/product1.png';
+import product2 from '../../design/guide/product2.png';
+import product3 from '../../design/guide/product3.png';
 
 // ── layout constants ────────────────────────────────────────────────────────
 const NAVY  = '#0d1f3c';
-const SCALE = 0.629;
+const SCALE = 0.742;
 const VW    = 1024;   // virtual app width
 const VH    = 680;    // virtual app height shown
-const FW    = Math.round(VW * SCALE);   // 644 – preview frame visual width
-const FH    = Math.round(VH * SCALE);   // 428 – preview frame visual height
-const COL   = 150;    // callout column width
-const GAP   = 16;     // gap between column and preview
+const FW    = Math.round(VW * SCALE);   // 760 – preview frame visual width
+const FH    = Math.round(VH * SCALE);   // 505 – preview frame visual height
+const COL   = 100;    // callout column width
+const GAP   = 8;      // gap between column and preview
 
 // ── types ───────────────────────────────────────────────────────────────────
 interface Callout {
@@ -83,9 +86,9 @@ function PCategoryRail({ active = 0 }: { active?: number }) {
 // ── preview 1 – catalog + product card ──────────────────────────────────────
 function Step1Preview() {
   const cards = [
-    { name: 'Капучино',  desc: 'Кофе с молоком и плотной молочной пеной.', sizes: ['200 мл','300 мл','400 мл'], price: 7, hi: true },
-    { name: 'Американо', desc: 'Эспрессо, разбавленный горячей водой.',    sizes: ['200 мл','300 мл'],          price: 6 },
-    { name: 'Эспрессо',  desc: 'Крепкий концентрированный кофе.',           sizes: ['25 мл','50 мл'],            price: 5 },
+    { name: 'Капучино',  desc: 'Кофе с молоком и плотной молочной пеной.', sizes: ['200 мл','300 мл','400 мл'], price: 7, hi: true,  img: product1 },
+    { name: 'Американо', desc: 'Эспрессо, разбавленный горячей водой.',    sizes: ['200 мл','300 мл'],          price: 6,             img: product2 },
+    { name: 'Эспрессо',  desc: 'Крепкий концентрированный кофе.',           sizes: ['25 мл','50 мл'],            price: 5,             img: product3 },
   ];
   const prodW = VW - 32 * 2 - 350;
   return (
@@ -98,7 +101,7 @@ function Step1Preview() {
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(3, 1fr)`, gap: 14, width: prodW }}>
           {cards.map((p, i) => (
             <div key={i} style={{ background: '#fff', borderRadius: 12, overflow: 'hidden', border: `2px solid ${p.hi ? NAVY : '#e2e8f0'}`, boxShadow: '0 1px 6px rgba(0,0,0,0.06)' }}>
-              <div style={{ height: 100, background: '#e5e7eb' }} />
+              <img src={p.img} alt={p.name} style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
               <div style={{ padding: '10px 12px' }}>
                 <div style={{ fontWeight: 700, fontSize: 14, color: NAVY }}>{p.name}</div>
                 <div style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>{p.desc}</div>
@@ -116,7 +119,7 @@ function Step1Preview() {
       </div>
       {/* product detail panel */}
       <div style={{ position: 'absolute', top: 0, right: 0, width: 350, height: '100%', background: '#fff', boxShadow: '-6px 0 32px rgba(13,31,60,0.13)', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: 220, background: '#e8eaef' }} />
+        <img src={product1} alt="Капучино" style={{ width: '100%', height: 220, objectFit: 'cover', display: 'block' }} />
         <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: NAVY }}>КОФЕ</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: NAVY, letterSpacing: '-0.02em', lineHeight: 1.1 }}>Капучино</div>
@@ -245,7 +248,7 @@ function Step3Preview() {
         <div style={{ background: '#fff', borderRadius: 14, padding: '16px 22px', marginBottom: 12 }}>
           <div style={{ fontSize: 14, fontWeight: 700, color: NAVY, marginBottom: 10 }}>Состав заказа</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 8, background: '#e5e7eb', flexShrink: 0 }} />
+            <img src={product1} alt="Капучино" style={{ width: 60, height: 60, borderRadius: 8, objectFit: 'cover', flexShrink: 0, display: 'block' }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 14, fontWeight: 600, color: NAVY }}>Капучино</div>
               <div style={{ fontSize: 12, color: '#94a3b8' }}>200 мл</div>
@@ -329,10 +332,10 @@ const STEPS: StepDef[] = [
     sub: 'Выберите категорию, настройте товар и добавьте его в корзину.',
     Preview: Step1Preview,
     callouts: [
-      { num: 1, side: 'left',  top: 86,  text: 'Выберите нужную категорию в меню.' },
-      { num: 2, side: 'left',  top: 230, text: 'Откройте товар и выберите объём / опции.' },
-      { num: 3, side: 'right', top: 32,  text: 'После добавления товар появится в корзине.' },
-      { num: 4, side: 'right', top: 350, text: 'Нажмите «В корзину».' },
+      { num: 1, side: 'left',  top: 65,  text: 'Выберите нужную категорию в меню.' },
+      { num: 2, side: 'left',  top: 215, text: 'Откройте товар и выберите объём / опции.' },
+      { num: 3, side: 'right', top: 60,  text: 'После добавления товар появится в корзине.' },
+      { num: 4, side: 'right', top: 440, text: 'Нажмите «В корзину».' },
     ],
   },
   {
@@ -340,11 +343,11 @@ const STEPS: StepDef[] = [
     sub: 'Проверьте данные заказа, при необходимости добавьте комментарий и подтвердите оформление.',
     Preview: Step2Preview,
     callouts: [
-      { num: 1, side: 'left',  top: 118, text: 'Проверьте имя клиента.' },
-      { num: 2, side: 'left',  top: 178, text: 'Выберите, куда подать ваш заказ?' },
-      { num: 3, side: 'left',  top: 252, text: 'При необходимости добавьте комментарий к заказу.' },
-      { num: 4, side: 'right', top: 160, text: 'Проверьте состав заказа и сумму.' },
-      { num: 5, side: 'right', top: 280, text: 'Нажмите «Подтвердить заказ».' },
+      { num: 1, side: 'left',  top: 100, text: 'Проверьте имя клиента.' },
+      { num: 2, side: 'left',  top: 200, text: 'Выберите, куда подать ваш заказ?' },
+      { num: 3, side: 'left',  top: 320, text: 'При необходимости добавьте комментарий к заказу.' },
+      { num: 4, side: 'right', top: 185, text: 'Проверьте состав заказа и сумму.' },
+      { num: 5, side: 'right', top: 310, text: 'Нажмите «Подтвердить заказ».' },
     ],
   },
   {
@@ -352,10 +355,10 @@ const STEPS: StepDef[] = [
     sub: 'Вы можете следить за статусом заказа и при необходимости продолжить покупки.',
     Preview: Step3Preview,
     callouts: [
-      { num: 1, side: 'left',  top: 130, text: 'Заказ передан администратору.' },
-      { num: 2, side: 'left',  top: 235, text: 'Следите за текущим статусом заказа.' },
-      { num: 3, side: 'right', top: 295, text: 'Проверьте состав заказа и сумму.' },
-      { num: 4, side: 'left',  top: 368, text: 'Нажмите «Продолжить покупки», чтобы вернуться в меню.' },
+      { num: 1, side: 'left',  top: 80,  text: 'Заказ передан администратору.' },
+      { num: 2, side: 'left',  top: 225, text: 'Следите за текущим статусом заказа.' },
+      { num: 3, side: 'right', top: 335, text: 'Проверьте состав заказа и сумму.' },
+      { num: 4, side: 'left',  top: 430, text: 'Нажмите «Продолжить покупки», чтобы вернуться в меню.' },
     ],
   },
   {
@@ -363,16 +366,16 @@ const STEPS: StepDef[] = [
     sub: 'Ознакомьтесь со статистикой и списком прошлых заказов и сессий.',
     Preview: Step4Preview,
     callouts: [
-      { num: 1, side: 'left',  top: 148, text: 'Откройте раздел с историей заказов.' },
-      { num: 2, side: 'right', top: 145, text: 'Сверху доступна краткая статистика.' },
-      { num: 3, side: 'left',  top: 298, text: 'Ниже отображается список прошлых заказов.' },
-      { num: 4, side: 'right', top: 340, text: 'Нажмите на строку заказа, чтобы открыть детали.' },
+      { num: 1, side: 'left',  top: 65,  text: 'Откройте раздел с историей заказов.' },
+      { num: 2, side: 'right', top: 175, text: 'Сверху доступна краткая статистика.' },
+      { num: 3, side: 'left',  top: 290, text: 'Ниже отображается список прошлых заказов.' },
+      { num: 4, side: 'right', top: 370, text: 'Нажмите на строку заказа, чтобы открыть детали.' },
     ],
   },
 ];
 
 // ── callout bubble component ─────────────────────────────────────────────────
-const ARROW_LINE = GAP + 10;   // px – line length (crosses gap + 10px into preview)
+const ARROW_LINE = GAP + 14;   // px – line length (crosses gap + 14px into preview)
 const ARROW_HEAD = 7;           // px – arrowhead width
 
 function CalloutBubble({ c, side }: { c: Callout; side: 'left' | 'right' }) {
@@ -430,8 +433,6 @@ export function SessionGuide({ onDismiss }: { onDismiss: () => void }) {
   const current = STEPS[step];
 
   const handleTap = (e: React.MouseEvent) => {
-    // Ignore taps on the preview frame (pointer-events:none means this shouldn't fire from there,
-    // but guard anyway)
     const isRight = e.clientX > window.innerWidth / 2;
     if (isRight) {
       if (step < STEPS.length - 1) setStep(s => s + 1);
@@ -471,12 +472,24 @@ export function SessionGuide({ onDismiss }: { onDismiss: () => void }) {
           </h1>
           <p style={{ margin: '6px 0 0', fontSize: 14, color: '#475569', lineHeight: 1.5 }}>{current.sub}</p>
         </div>
-        <div style={{
-          background: NAVY, color: '#fff',
-          borderRadius: 22, padding: '7px 16px',
-          fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 16,
-        }}>
-          Шаг {step + 1} из {STEPS.length}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 16 }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+            style={{
+              background: 'transparent', border: `1.5px solid #cbd5e1`,
+              color: '#64748b', borderRadius: 22, padding: '7px 16px',
+              fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+            }}
+          >
+            Пропустить
+          </button>
+          <div style={{
+            background: NAVY, color: '#fff',
+            borderRadius: 22, padding: '7px 16px',
+            fontSize: 13, fontWeight: 700, whiteSpace: 'nowrap',
+          }}>
+            Шаг {step + 1} из {STEPS.length}
+          </div>
         </div>
       </div>
 
