@@ -30,7 +30,7 @@ export function Header({ settings, query, onQuery, cartCount, cartTotal, onOpenC
           <img src="/logo.webp" alt="SquareStudio" className="brand__mark" />
         </button>
         <div className="brand__text">
-          <div className="brand__name">SquareStudio</div>
+          <div className="brand__name">Студия Квадрат</div>
           <div className="brand__tag">Barber · Меню заказа</div>
         </div>
       </div>
