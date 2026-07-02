@@ -88,7 +88,7 @@ export function OrderStatus({ order, productsById, onClose, onCancel }: OrderSta
             <h3>Состав заказа</h3>
             <ul>
               {order.orderItems.map((it) => {
-                const pr = it.productId != null ? productsById[it.productId] : undefined;
+                const pr = it.positionId != null ? productsById[it.positionId] : undefined;
                 return (
                   <li key={it.id}>
                     {pr ? (
@@ -97,7 +97,7 @@ export function OrderStatus({ order, productsById, onClose, onCancel }: OrderSta
                       <div className="photo photo--line photo--placeholder" style={{ background: '#e5e7eb' }} />
                     )}
                     <div>
-                      <div className="status__iname">{it.productName}</div>
+                      <div className="status__iname">{it.positionName ?? it.serviceName}</div>
                       {it.size && (
                         <div className="status__isub">{it.size}</div>
                       )}

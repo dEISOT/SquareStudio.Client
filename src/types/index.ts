@@ -42,7 +42,7 @@ export interface Workstation {
 }
 
 export interface OrderItemRequest {
-  productId?: number;
+  positionId?: number;
   serviceId?: number;
   quantity: number;
   size?: string;
@@ -59,8 +59,8 @@ export interface CreateOrderPayload {
 export interface OrderItemDto {
   id: number;
   orderId: number;
-  productId?: number | null;
-  productName?: string | null;
+  positionId?: number | null;
+  positionName?: string | null;
   serviceId?: number | null;
   serviceName?: string | null;
   quantity: number;

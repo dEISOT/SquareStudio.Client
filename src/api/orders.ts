@@ -7,6 +7,12 @@ export const createOrder = (payload: CreateOrderPayload): Promise<Order> =>
     body: JSON.stringify(payload),
   });
 
+export const cancelOrder = (id: number, workStationId: number): Promise<Order> =>
+  apiFetch<Order>(`/orders/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ status: 'Canceled', workStationId }),
+  });
+
 export const fetchOrder = (id: number): Promise<Order> =>
   apiFetch<Order>(`/orders/${id}`);
 

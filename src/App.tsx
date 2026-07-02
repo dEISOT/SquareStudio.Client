@@ -4,7 +4,7 @@ import { fetchCategories } from './api/categories';
 import { fetchPublishedProducts } from './api/products';
 import { fetchServices } from './api/services';
 import { fetchWorkstations } from './api/workstations';
-import { createOrder, fetchOrder } from './api/orders';
+import { createOrder, cancelOrder, fetchOrder } from './api/orders';
 import { fetchKioskSettings } from './api/settings';
 import { fetchPublishedAds } from './api/ads';
 import { fetchActiveSession } from './api/sessions';
@@ -323,7 +323,7 @@ export default function App() {
         note: data.note || undefined,
         sessionId: session?.sessionId ?? undefined,
         items: cart.map((it) => ({
-          productId: it.productId,
+          positionId: it.productId,
           serviceId: it.serviceId,
           quantity: it.qty,
           size: it.selectedSize,
@@ -342,9 +342,16 @@ export default function App() {
     }
   };
 
-  const handleCancelOrder = (orderId: number) => {
-    setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
-    flash('Заказ отменён');
+  const handleCancelOrder = async (orderId: number) => {
+    const order = activeOrders.find((o) => o.id === orderId);
+    if (!order) return;
+    try {
+      await cancelOrder(orderId, order.workStationId);
+      setActiveOrders((prev) => prev.filter((o) => o.id !== orderId));
+      flash('Заказ отменён');
+    } catch {
+      flash('Не удалось отменить заказ. Попробуйте ещё раз.');
+    }
   };
 
   const categoryName = (id: number) => categories.find((c) => c.id === id)?.name ?? '';

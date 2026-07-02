@@ -104,7 +104,7 @@ function OrderDetail({ order, productsById, onBack, onCancel, onContinue }: {
           <h3>Состав заказа</h3>
           <ul>
             {order.orderItems.map((it) => {
-              const pr = it.productId != null ? productsById[it.productId] : undefined;
+              const pr = it.positionId != null ? productsById[it.positionId] : undefined;
               return (
                 <li key={it.id}>
                   {pr
@@ -112,7 +112,7 @@ function OrderDetail({ order, productsById, onBack, onCancel, onContinue }: {
                     : <div className="photo photo--line photo--placeholder" style={{ background: '#e5e7eb' }} />
                   }
                   <div>
-                    <div className="status__iname">{it.productName}</div>
+                    <div className="status__iname">{it.positionName}</div>
                     {it.size && <div className="status__isub">{it.size}</div>}
                   </div>
                   <div className="status__iqty">×{it.quantity}</div>
@@ -168,7 +168,7 @@ export function OrdersOverlay({ orders, productsById, initialViewingId, onClose,
 
   const handleCancel = (orderId: number) => {
     onCancel(orderId);
-    setViewingId(null);
+    onClose();
   };
 
   return (
@@ -202,7 +202,7 @@ export function OrdersOverlay({ orders, productsById, initialViewingId, onClose,
                       <span className="ocard__status">{STATUS_LABEL[o.status]}</span>
                     </div>
                     <div className="ocard__items">
-                      {o.orderItems.slice(0, 3).map((it) => it.productName).join(' · ')}
+                      {o.orderItems.slice(0, 3).map((it) => it.positionName ?? it.serviceName).join(' · ')}
                       {o.orderItems.length > 3 && ` · +${o.orderItems.length - 3}`}
                     </div>
                   </div>
