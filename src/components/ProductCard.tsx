@@ -19,8 +19,16 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
 
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
+  const isStorable = product.categoryType === 'Storable';
+  const hasAnyStock = !isStorable || !hasVariants ||
+    product.variants.some(v => (v.stockQuantity ?? 0) > 0);
+  const selectedVariant = selectedSize ? product.variants.find(v => v.name === selectedSize) : null;
+  const showPreorder = isStorable && hasVariants && (
+    !hasAnyStock || (selectedSize !== undefined && (selectedVariant?.stockQuantity ?? 0) === 0)
+  );
+
   const currentQty = qtyInCart(selectedSize);
-  const canAdd = !hasVariants || selectedSize !== undefined;
+  const canAdd = !showPreorder && (!hasVariants || selectedSize !== undefined);
   const displayPrice = variantPrice(product, selectedSize);
   const showFrom = !selectedSize && product.variants.some(v => v.price != null && v.price !== product.price);
 
@@ -43,7 +51,11 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
             {product.variants.map((v) => (
               <button
                 key={v.name}
-                className={`size-chip ${selectedSize === v.name ? 'is-active' : ''}`}
+                className={[
+                  'size-chip',
+                  selectedSize === v.name ? 'is-active' : '',
+                  isStorable && (v.stockQuantity ?? 0) === 0 ? 'is-out-of-stock' : '',
+                ].filter(Boolean).join(' ')}
                 onClick={(e) => handleSizePick(e, v.name)}
               >
                 {v.name}
@@ -54,7 +66,12 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
 
         <div className="card__foot">
           <span className="card__price">{showFrom && <span className="card__price-from">От </span>}{rub(displayPrice)}</span>
-          {currentQty > 0 && canAdd ? (
+          {showPreorder ? (
+            <button className="add add--preorder" onClick={stop}>
+              <Icon name="time" size={18} />
+              <span>Предзаказ</span>
+            </button>
+          ) : currentQty > 0 && canAdd ? (
             <div className="qty" onClick={stop}>
               <button className="qty__btn" onClick={() => onDec(selectedSize)} aria-label="Убрать одну">
                 <Icon name="minus" size={18} />

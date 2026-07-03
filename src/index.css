@@ -422,6 +422,8 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   transition: background 120ms, transform 120ms;
 }
 .add:hover { background: var(--navy-soft); transform: translateY(-1px); }
+.add--preorder { background: var(--paper-3); color: var(--dim); cursor: default; }
+.add--preorder:hover { background: var(--paper-3); transform: none; }
 
 /* Quantity stepper */
 .qty {
@@ -605,6 +607,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   border-color: var(--navy);
   color: #fff;
 }
+.size-chip.is-out-of-stock { opacity: 0.45; }
 .size-chip--lg {
   padding: 10px 20px;
   font-size: 15px;

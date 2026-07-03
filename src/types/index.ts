@@ -6,6 +6,7 @@ export interface Category {
 export interface ProductVariant {
   name: string;
   price?: number | null;
+  stockQuantity?: number | null;
 }
 
 export interface Product {
@@ -18,6 +19,7 @@ export interface Product {
   videoUrl?: string | null;
   categoryId: number;
   categoryName: string;
+  categoryType?: string | null;
   isPublished: boolean;
   variants: ProductVariant[];
 }

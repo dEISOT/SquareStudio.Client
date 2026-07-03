@@ -18,7 +18,14 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
   if (!product) return null;
 
   const hasSizes = product.variants.length > 0;
-  const canAdd   = !hasSizes || selectedSize !== undefined;
+  const isStorable = product.categoryType === 'Storable';
+  const hasAnyStock = !isStorable || !hasSizes ||
+    product.variants.some(v => (v.stockQuantity ?? 0) > 0);
+  const selectedVariant = selectedSize ? product.variants.find(v => v.name === selectedSize) : null;
+  const showPreorder = isStorable && hasSizes && (
+    !hasAnyStock || (selectedSize !== undefined && (selectedVariant?.stockQuantity ?? 0) === 0)
+  );
+  const canAdd = !showPreorder && (!hasSizes || selectedSize !== undefined);
   const displayPrice = variantPrice(product, selectedSize);
   const currentQty = qtyInCart(selectedSize);
   const showFrom = !selectedSize && product.variants.some(v => v.price != null && v.price !== product.price);
@@ -64,7 +71,11 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
                   {product.variants.map((v) => (
                     <button
                       key={v.name}
-                      className={`size-chip size-chip--lg ${selectedSize === v.name ? 'is-active' : ''}`}
+                      className={[
+                        'size-chip size-chip--lg',
+                        selectedSize === v.name ? 'is-active' : '',
+                        isStorable && (v.stockQuantity ?? 0) === 0 ? 'is-out-of-stock' : '',
+                      ].filter(Boolean).join(' ')}
                       onClick={() => setSelectedSize((prev) => (prev === v.name ? undefined : v.name))}
                     >
                       {v.name}
@@ -78,21 +89,28 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
             )}
             <div className="pdp__price">{showFrom && <span className="pdp__price-from">От </span>}{rub(displayPrice)}</div>
             <div className="pdp__cta">
-              <button
-                className="btn btn--primary btn--lg"
-                disabled={!canAdd}
-                onClick={handleAdd}
-                style={{ minWidth: 200 }}
-              >
-                <Icon name="plus" size={20} />
-                <span style={{ whiteSpace: 'nowrap' }}>
-                  {hasSizes && !selectedSize
-                    ? 'Выберите размер'
-                    : currentQty > 0
-                    ? `Добавить ещё (${currentQty} в корзине)`
-                    : 'Добавить в корзину'}
-                </span>
-              </button>
+              {showPreorder ? (
+                <button className="btn btn--ghost btn--lg" disabled style={{ minWidth: 200, flex: 1 }}>
+                  <Icon name="time" size={20} />
+                  <span style={{ whiteSpace: 'nowrap', marginLeft: 8 }}>Предзаказ</span>
+                </button>
+              ) : (
+                <button
+                  className="btn btn--primary btn--lg"
+                  disabled={!canAdd}
+                  onClick={handleAdd}
+                  style={{ minWidth: 200 }}
+                >
+                  <Icon name="plus" size={20} />
+                  <span style={{ whiteSpace: 'nowrap' }}>
+                    {hasSizes && !selectedSize
+                      ? 'Выберите размер'
+                      : currentQty > 0
+                      ? `Добавить ещё (${currentQty} в корзине)`
+                      : 'Добавить в корзину'}
+                  </span>
+                </button>
+              )}
               <button className="btn btn--ghost btn--lg" onClick={handleClose}>
                 Закрыть
               </button>
