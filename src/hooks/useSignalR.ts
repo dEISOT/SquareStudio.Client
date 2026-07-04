@@ -31,7 +31,7 @@ export function useSignalR(
   onSessionStarted: (greeting: SessionGreeting) => void,
   onSessionEnded: () => void,
   onWorkstationTaken?: () => void,
-): { claimedWorkstations: number[] } {
+): { claimedWorkstations: number[]; notifySessionEndingSoon: (workstationId: number, sessionId: number | null) => Promise<void> } {
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const workstationIdRef = useRef<number | null>(null);
   const onSessionStartedRef = useRef(onSessionStarted);
@@ -113,5 +113,11 @@ export function useSignalR(
     }
   }, [workstationId, joinWorkstation]);
 
-  return { claimedWorkstations };
+  const notifySessionEndingSoon = useCallback(async (wsId: number, sessionId: number | null) => {
+    const conn = connectionRef.current;
+    if (!conn || conn.state !== signalR.HubConnectionState.Connected) return;
+    await conn.invoke('NotifySessionEndingSoon', wsId, sessionId).catch(() => {});
+  }, []);
+
+  return { claimedWorkstations, notifySessionEndingSoon };
 }

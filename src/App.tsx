@@ -251,7 +251,7 @@ export default function App() {
   }, [loading, workstationId]);
 
   // ── SignalR (after idle so wake is in scope) ───────────────────────────────
-  const { claimedWorkstations } = useSignalR(
+  const { claimedWorkstations, notifySessionEndingSoon } = useSignalR(
     workstationId,
     (g) => {
       setGreeting(g);
@@ -261,6 +261,12 @@ export default function App() {
     endSession,
     () => flash('Это рабочее место уже занято другим экраном'),
   );
+
+  const handleNotifyEnding = useCallback(() => {
+    if (workstationId === null) return;
+    void notifySessionEndingSoon(workstationId, session?.sessionId ?? null);
+    setSelectorOpen(false);
+  }, [workstationId, session, notifySessionEndingSoon]);
 
   const handleWake = useCallback(() => {
     wake();
@@ -551,6 +557,8 @@ export default function App() {
         currentId={workstationId}
         takenIds={claimedWorkstations}
         onSelect={handleSelectWorkstation}
+        sessionId={session?.sessionId ?? null}
+        onNotifyEnding={handleNotifyEnding}
       />
 
       <Toast message={toast} />

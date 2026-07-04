@@ -7,9 +7,11 @@ interface WorkstationSelectorProps {
   currentId: number | null;
   takenIds: number[];
   onSelect: (id: number) => void;
+  sessionId?: number | null;
+  onNotifyEnding?: () => void;
 }
 
-export function WorkstationSelector({ open, onClose, workstations, currentId, takenIds, onSelect }: WorkstationSelectorProps) {
+export function WorkstationSelector({ open, onClose, workstations, currentId, takenIds, onSelect, sessionId, onNotifyEnding }: WorkstationSelectorProps) {
   if (!open) return null;
 
   return (
@@ -87,10 +89,23 @@ export function WorkstationSelector({ open, onClose, workstations, currentId, ta
           })}
         </div>
 
+        {currentId !== null && onNotifyEnding && (
+          <button
+            onClick={onNotifyEnding}
+            style={{
+              marginTop: '1rem', width: '100%', padding: '0.625rem',
+              borderRadius: '0.5rem', border: '1px solid #fca5a5',
+              background: '#fef2f2', cursor: 'pointer',
+              fontSize: '0.875rem', color: '#ef4444', fontWeight: 600,
+            }}
+          >
+            Сеанс закончится через 10 минут
+          </button>
+        )}
         <button
           onClick={onClose}
           style={{
-            marginTop: '1rem', width: '100%', padding: '0.625rem',
+            marginTop: '0.5rem', width: '100%', padding: '0.625rem',
             borderRadius: '0.5rem', border: '1px solid #e2e8f0',
             background: '#f8fafc', cursor: 'pointer',
             fontSize: '0.875rem', color: '#64748b',
