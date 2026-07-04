@@ -89,7 +89,7 @@ export function WorkstationSelector({ open, onClose, workstations, currentId, ta
           })}
         </div>
 
-        {currentId !== null && onNotifyEnding && (
+        {sessionId != null && onNotifyEnding && (
           <button
             onClick={onNotifyEnding}
             style={{
