@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 export interface MediaItem {
   imageUrl?: string | null;
+  thumbnailUrl?: string | null;
   videoUrl?: string | null;
   name: string;
   categoryId?: number | null;
@@ -61,17 +62,23 @@ interface PhotoSlotProps {
 }
 
 export function PhotoSlot({ item, size = 'card' }: PhotoSlotProps) {
-  const { imageUrl, videoUrl } = item;
+  const { imageUrl, thumbnailUrl, videoUrl } = item;
 
   if (videoUrl && size === 'pdp') {
     return <PdpVideo videoUrl={videoUrl} imageUrl={imageUrl} />;
   }
 
-  if (imageUrl) {
+  // Lists and cards use the lightweight cropped thumbnail when available;
+  // the full-size original is only loaded on the product page (pdp).
+  const displayUrl = size === 'pdp' ? imageUrl : (thumbnailUrl ?? imageUrl);
+
+  if (displayUrl) {
+    const bgPosition = 'center';
+
     return (
       <div
         className={`photo photo--${size}`}
-        style={{ backgroundImage: `url("${imageUrl}")` }}
+        style={{ backgroundImage: `url("${displayUrl}")`, backgroundPosition: bgPosition }}
       >
         {videoUrl && size === 'card' && (
           <div className="photo__play" aria-hidden="true">▶</div>

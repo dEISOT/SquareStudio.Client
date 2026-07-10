@@ -16,6 +16,7 @@ export interface Product {
   longDescription?: string | null;
   price: number;
   imageUrl?: string | null;
+  thumbnailUrl?: string | null;
   videoUrl?: string | null;
   categoryId: number;
   categoryName: string;
@@ -31,6 +32,7 @@ export interface Service {
   longDescription?: string | null;
   cost: number;
   imageUrl?: string | null;
+  thumbnailUrl?: string | null;
   videoUrl?: string | null;
   categoryId?: number | null;
   categoryName: string;
