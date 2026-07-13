@@ -47,22 +47,23 @@ export default function App() {
   const [loading, setLoading]           = useState(true);
 
   useEffect(() => {
+    // Only the data the menu grid itself needs gates the loading screen.
+    // Workstations/settings/ads aren't rendered until later (checkout, idle
+    // slideshow) so they load in the background instead of blocking LCP.
     Promise.all([
       fetchCategories().catch(() => [] as Category[]),
       fetchPublishedProducts().catch(() => [] as Product[]),
       fetchServices().catch(() => [] as Service[]),
-      fetchWorkstations().catch(() => [] as Workstation[]),
-      fetchKioskSettings().catch(() => null),
-      fetchPublishedAds().catch(() => [] as Ad[]),
-    ]).then(([cats, prods, svcs, wss, s, adList]) => {
+    ]).then(([cats, prods, svcs]) => {
       setCategories(cats);
       setProducts(prods);
       setServices(svcs);
-      setWorkstations(wss);
-      if (s) setSettings(s);
-      setAds(adList);
       setLoading(false);
     });
+
+    fetchWorkstations().then(setWorkstations).catch(() => {});
+    fetchKioskSettings().then((s) => { if (s) setSettings(s); }).catch(() => {});
+    fetchPublishedAds().then(setAds).catch(() => {});
   }, []);
 
   // ── UI state ───────────────────────────────────────────────────────────────
@@ -366,7 +367,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="app-loading">
-        <img src="/logo.webp" alt="SquareStudio" className="app-loading__logo" />
+        <img src="/logo.webp" alt="SquareStudio" className="app-loading__logo" width={64} height={64} fetchPriority="high" />
         <p>Загружаем меню…</p>
       </div>
     );

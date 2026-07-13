@@ -73,13 +73,15 @@ export function PhotoSlot({ item, size = 'card' }: PhotoSlotProps) {
   const displayUrl = size === 'pdp' ? imageUrl : (thumbnailUrl ?? imageUrl);
 
   if (displayUrl) {
-    const bgPosition = 'center';
-
     return (
-      <div
-        className={`photo photo--${size}`}
-        style={{ backgroundImage: `url("${displayUrl}")`, backgroundPosition: bgPosition }}
-      >
+      <div className={`photo photo--${size}`}>
+        <img
+          src={displayUrl}
+          alt={item.name}
+          className="photo__img"
+          loading={size === 'pdp' ? 'eager' : 'lazy'}
+          decoding="async"
+        />
         {videoUrl && size === 'card' && (
           <div className="photo__play" aria-hidden="true">▶</div>
         )}
