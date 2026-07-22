@@ -358,7 +358,7 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   background-position: center;
   overflow: hidden;
 }
-.photo--card { aspect-ratio: 4 / 3; }
+.photo--card { aspect-ratio: 3 / 4; }
 .photo--pdp  { aspect-ratio: 4 / 3; border-radius: var(--r-lg); }
 .photo--line { width: 64px; height: 64px; border-radius: 10px; flex: 0 0 64px; }
 .photo--placeholder { display: grid; place-items: center; }
@@ -1006,6 +1006,12 @@ code { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   .checkout { grid-template-columns: 1fr; }
   .summary { position: static; }
   .status__meta { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Keep 4 columns through tablet widths (iPad portrait/landscape) despite the
+   1180px breakpoint above dropping to 3 for the rest of the layout. */
+@media (min-width: 761px) and (max-width: 1180px) {
+  .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
