@@ -46,50 +46,52 @@ export function ProductCard({ product, qtyInCart, onOpen, onAdd, onInc, onDec }:
         </div>
         {product.description && <p className="card__desc">{product.description}</p>}
 
-        {hasVariants && (
-          <div className="card__sizes" onClick={stop}>
-            {product.variants.map((v) => (
-              <button
-                key={v.name}
-                className={[
-                  'size-chip',
-                  selectedSize === v.name ? 'is-active' : '',
-                  isStorable && (v.stockQuantity ?? 0) === 0 ? 'is-out-of-stock' : '',
-                ].filter(Boolean).join(' ')}
-                onClick={(e) => handleSizePick(e, v.name)}
-              >
-                {v.name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="card__foot">
-          <span className="card__price">{showFrom && <span className="card__price-from">От </span>}{rub(displayPrice)}</span>
-          {showPreorder ? (
-            <button className="add add--preorder" onClick={stop}>
-              <Icon name="time" size={18} />
-              <span>Предзаказ</span>
-            </button>
-          ) : currentQty > 0 && canAdd ? (
-            <div className="qty" onClick={stop}>
-              <button className="qty__btn" onClick={() => onDec(selectedSize)} aria-label="Убрать одну">
-                <Icon name="minus" size={18} />
-              </button>
-              <span className="qty__n">{currentQty}</span>
-              <button className="qty__btn" onClick={() => onInc(selectedSize)} aria-label="Добавить одну">
-                <Icon name="plus" size={18} />
-              </button>
+        <div className="card__bottom">
+          {hasVariants && (
+            <div className="card__sizes" onClick={stop}>
+              {product.variants.map((v) => (
+                <button
+                  key={v.name}
+                  className={[
+                    'size-chip',
+                    selectedSize === v.name ? 'is-active' : '',
+                    isStorable && (v.stockQuantity ?? 0) === 0 ? 'is-out-of-stock' : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={(e) => handleSizePick(e, v.name)}
+                >
+                  {v.name}
+                </button>
+              ))}
             </div>
-          ) : (
-            <button
-              className="add"
-              onClick={(e) => { stop(e); if (canAdd) onAdd(selectedSize); else onOpen(); }}
-            >
-              <Icon name="plus" size={18} />
-              <span>{hasVariants && !selectedSize ? 'Выберите' : 'В корзину'}</span>
-            </button>
           )}
+
+          <div className="card__foot">
+            <span className="card__price">{showFrom && <span className="card__price-from">От </span>}{rub(displayPrice)}</span>
+            {showPreorder ? (
+              <button className="add add--preorder" onClick={stop}>
+                <Icon name="time" size={18} />
+                <span>Предзаказ</span>
+              </button>
+            ) : currentQty > 0 && canAdd ? (
+              <div className="qty" onClick={stop}>
+                <button className="qty__btn" onClick={() => onDec(selectedSize)} aria-label="Убрать одну">
+                  <Icon name="minus" size={18} />
+                </button>
+                <span className="qty__n">{currentQty}</span>
+                <button className="qty__btn" onClick={() => onInc(selectedSize)} aria-label="Добавить одну">
+                  <Icon name="plus" size={18} />
+                </button>
+              </div>
+            ) : (
+              <button
+                className="add"
+                onClick={(e) => { stop(e); if (canAdd) onAdd(selectedSize); else onOpen(); }}
+              >
+                <Icon name="plus" size={18} />
+                <span>{hasVariants && !selectedSize ? 'Выберите' : 'В корзину'}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </article>

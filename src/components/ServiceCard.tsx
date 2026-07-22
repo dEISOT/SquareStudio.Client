@@ -17,18 +17,20 @@ export function ServiceCard({ service, onOpen, onAdd }: ServiceCardProps) {
           <h3 className="card__name">{service.name}</h3>
         </div>
         {service.description && <p className="card__desc">{service.description}</p>}
-        <div className="card__foot">
-          <span className="card__price">{rub(service.cost)}</span>
-          {onAdd ? (
-            <button
-              className="btn btn--primary btn--sm"
-              onClick={(e) => { e.stopPropagation(); onAdd(); }}
-            >
-              Добавить
-            </button>
-          ) : (
-            <span className="service-badge">Услуга</span>
-          )}
+        <div className="card__bottom">
+          <div className="card__foot">
+            <span className="card__price">{rub(service.cost)}</span>
+            {onAdd ? (
+              <button
+                className="btn btn--primary btn--sm"
+                onClick={(e) => { e.stopPropagation(); onAdd(); }}
+              >
+                Добавить
+              </button>
+            ) : (
+              <span className="service-badge">Услуга</span>
+            )}
+          </div>
         </div>
       </div>
     </article>
