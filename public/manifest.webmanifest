@@ -1,0 +1,16 @@
+{
+  "name": "Square Studio",
+  "short_name": "Square Studio",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#021a62",
+  "theme_color": "#021a62",
+  "icons": [
+    {
+      "src": "/logo.webp",
+      "sizes": "945x945",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}
