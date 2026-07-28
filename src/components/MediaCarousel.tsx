@@ -43,7 +43,7 @@ export function MediaCarousel({ items, name }: MediaCarouselProps) {
               <CarouselVideo videoUrl={item.url} />
             ) : (
               <div className="photo photo--pdp carousel__slide-media">
-                <img src={item.url} alt={name} className="photo__img" loading="eager" decoding="async" />
+                <img src={item.thumbnailUrl ?? item.url} alt={name} className="photo__img" loading="eager" decoding="async" />
               </div>
             )}
           </div>
