@@ -1,16 +1,17 @@
+import { memo } from 'react';
 import type { Service } from '../types';
 import { PhotoSlot } from './PhotoSlot';
 import { rub } from '../utils/format';
 
 interface ServiceCardProps {
   service: Service;
-  onOpen: () => void;
-  onAdd?: () => void;
+  onOpen: (id: number) => void;
+  onAdd?: (id: number) => void;
 }
 
-export function ServiceCard({ service, onOpen, onAdd }: ServiceCardProps) {
+function ServiceCardImpl({ service, onOpen, onAdd }: ServiceCardProps) {
   return (
-    <article className="card card--service" onClick={onOpen} role="button" tabIndex={0}>
+    <article className="card card--service" onClick={() => onOpen(service.id)} role="button" tabIndex={0}>
       <PhotoSlot item={service} size="card" />
       <div className="card__body">
         <div className="card__head">
@@ -23,7 +24,7 @@ export function ServiceCard({ service, onOpen, onAdd }: ServiceCardProps) {
             {onAdd ? (
               <button
                 className="btn btn--primary btn--sm"
-                onClick={(e) => { e.stopPropagation(); onAdd(); }}
+                onClick={(e) => { e.stopPropagation(); onAdd(service.id); }}
               >
                 Добавить
               </button>
@@ -36,3 +37,5 @@ export function ServiceCard({ service, onOpen, onAdd }: ServiceCardProps) {
     </article>
   );
 }
+
+export const ServiceCard = memo(ServiceCardImpl);

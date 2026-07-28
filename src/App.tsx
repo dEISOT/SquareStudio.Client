@@ -11,6 +11,7 @@ import { fetchActiveSession } from './api/sessions';
 import { useIdle } from './hooks/useIdle';
 import { useToast } from './hooks/useToast';
 import { useSignalR } from './hooks/useSignalR';
+import { useRevealMore } from './hooks/useRevealMore';
 import type { SessionGreeting } from './hooks/useSignalR';
 import { Header } from './components/Header';
 import { CategoryRail } from './components/CategoryRail';
@@ -126,6 +127,17 @@ export default function App() {
   const qtyOf = (id: number, size?: string) =>
     cart.find((x) => x.productId === id && x.selectedSize === size)?.qty ?? 0;
 
+  // Stable per-app callbacks (rather than a new closure per card per render) so
+  // ProductCard/ServiceCard's memoization can actually skip re-rendering cards
+  // whose own data didn't change.
+  const handleOpenProduct = useCallback((id: number) => {
+    setOpenProduct(productsById[id] ?? null);
+  }, [productsById]);
+
+  const handleOpenService = useCallback((id: number) => {
+    setOpenService(servicesById[id] ?? null);
+  }, [servicesById]);
+
   const addServiceToCart = useCallback((id: number) => {
     setCart((c) => {
       const i = c.findIndex((x) => x.serviceId === id);
@@ -178,6 +190,13 @@ export default function App() {
       return s.name.toLowerCase().includes(q) || s.description?.toLowerCase().includes(q);
     });
   }, [services, activeCat, query]);
+
+  // Single-category/search view has no upper bound like the "all" overview's
+  // slice(0, 8) per section — reveal items incrementally as the user scrolls
+  // near the end instead of mounting the whole (potentially huge) result set.
+  const { count: revealCount, sentinelRef: revealSentinelRef } = useRevealMore(`${activeCat}:${query}`);
+  const shownProducts = visible.slice(0, revealCount);
+  const shownServices = visibleServices.slice(0, Math.max(0, revealCount - shownProducts.length));
 
   const groupedByCat = useMemo(() => {
     if (activeCat !== 'all') return null;
@@ -419,18 +438,18 @@ export default function App() {
                       key={p.id}
                       product={p}
                       qtyInCart={(size) => qtyOf(p.id, size)}
-                      onOpen={() => setOpenProduct(p)}
-                      onAdd={(size) => addToCart(p.id, size)}
-                      onInc={(size) => incCart(p.id, size)}
-                      onDec={(size) => decCart(p.id, size)}
+                      onOpen={handleOpenProduct}
+                      onAdd={addToCart}
+                      onInc={incCart}
+                      onDec={decCart}
                     />
                   ))}
                   {g.services.slice(0, 8).map((s) => (
                     <ServiceCard
                       key={`svc-${s.id}`}
                       service={s}
-                      onOpen={() => setOpenService(s)}
-                      onAdd={session ? () => addServiceToCart(s.id) : undefined}
+                      onOpen={handleOpenService}
+                      onAdd={session ? addServiceToCart : undefined}
                     />
                   ))}
                 </div>
@@ -446,27 +465,31 @@ export default function App() {
             {visible.length === 0 && visibleServices.length === 0 ? (
               <EmptyState query={query} onClear={() => setQuery('')} />
             ) : (
-              <div className="grid">
-                {visible.map((p) => (
-                  <ProductCard
-                    key={p.id}
-                    product={p}
-                    qtyInCart={(size) => qtyOf(p.id, size)}
-                    onOpen={() => setOpenProduct(p)}
-                    onAdd={(size) => addToCart(p.id, size)}
-                    onInc={(size) => incCart(p.id, size)}
-                    onDec={(size) => decCart(p.id, size)}
-                  />
-                ))}
-                {visibleServices.map((s) => (
-                  <ServiceCard
-                    key={`svc-${s.id}`}
-                    service={s}
-                    onOpen={() => setOpenService(s)}
-                    onAdd={session ? () => addServiceToCart(s.id) : undefined}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid">
+                  {shownProducts.map((p) => (
+                    <ProductCard
+                      key={p.id}
+                      product={p}
+                      qtyInCart={(size) => qtyOf(p.id, size)}
+                      onOpen={handleOpenProduct}
+                      onAdd={addToCart}
+                      onInc={incCart}
+                      onDec={decCart}
+                    />
+                  ))}
+                  {shownServices.map((s) => (
+                    <ServiceCard
+                      key={`svc-${s.id}`}
+                      service={s}
+                      onOpen={handleOpenService}
+                      onAdd={session ? addServiceToCart : undefined}
+                    />
+                  ))}
+                </div>
+                {/* Growing this into view reveals more items — no page controls needed */}
+                <div ref={revealSentinelRef} style={{ height: 1 }} />
+              </>
             )}
           </section>
         )}
