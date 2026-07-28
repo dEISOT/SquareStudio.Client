@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Product } from '../types';
 import { Modal } from './Modal';
 import { PhotoSlot } from './PhotoSlot';
+import { MediaCarousel } from './MediaCarousel';
 import { Icon } from './Icon';
 import { rub, variantPrice } from '../utils/format';
 
@@ -49,7 +50,9 @@ export function ProductModal({ product, onClose, qtyInCart, onAdd }: ProductModa
         </button>
       </div>
       <div className="pdp">
-        <PhotoSlot item={product} size="pdp" />
+        {product.mediaItems.length > 0
+          ? <MediaCarousel items={product.mediaItems} name={product.name} />
+          : <PhotoSlot item={product} size="pdp" />}
         <div className="pdp__body">
           <div className="pdp__scroll">
             <div className="pdp__cat">{product.categoryName}</div>

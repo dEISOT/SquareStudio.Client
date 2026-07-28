@@ -9,6 +9,15 @@ export interface ProductVariant {
   stockQuantity?: number | null;
 }
 
+export interface GalleryMediaItem {
+  id: number;
+  url: string;
+  thumbnailUrl?: string | null;
+  type: 'Image' | 'Video';
+  sortOrder: number;
+  isCover: boolean;
+}
+
 export interface Product {
   id: number;
   name: string;
@@ -23,6 +32,7 @@ export interface Product {
   categoryType?: string | null;
   isPublished: boolean;
   variants: ProductVariant[];
+  mediaItems: GalleryMediaItem[];
 }
 
 export interface Service {
@@ -37,6 +47,7 @@ export interface Service {
   categoryId?: number | null;
   categoryName: string;
   masterIds: number[];
+  mediaItems: GalleryMediaItem[];
 }
 
 export interface Workstation {

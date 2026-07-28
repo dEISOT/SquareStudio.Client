@@ -1,6 +1,7 @@
 import type { Service } from '../types';
 import { Modal } from './Modal';
 import { PhotoSlot } from './PhotoSlot';
+import { MediaCarousel } from './MediaCarousel';
 import { Icon } from './Icon';
 import { rub } from '../utils/format';
 
@@ -21,7 +22,9 @@ export function ServiceModal({ service, onClose, onAdd }: ServiceModalProps) {
         </button>
       </div>
       <div className="pdp">
-        <PhotoSlot item={service} size="pdp" />
+        {service.mediaItems.length > 0
+          ? <MediaCarousel items={service.mediaItems} name={service.name} />
+          : <PhotoSlot item={service} size="pdp" />}
         <div className="pdp__body">
           <div className="pdp__scroll">
             <div className="pdp__cat">{service.categoryName}</div>
