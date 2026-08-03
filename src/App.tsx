@@ -300,16 +300,20 @@ export default function App() {
     catch { return []; }
   });
 
-  // Re-fetch saved orders on mount to get latest statuses
+  // Re-fetch saved orders on mount to get latest statuses.
+  // Use allSettled so a single deleted order (404) doesn't discard the rest.
   useEffect(() => {
     const saved: Order[] = (() => {
       try { return JSON.parse(localStorage.getItem('kiosk_orders') ?? '[]') as Order[]; }
       catch { return []; }
     })();
     if (saved.length === 0) return;
-    Promise.all(saved.map((o) => fetchOrder(o.id)))
-      .then((updated) => setActiveOrders(updated))
-      .catch(() => {});
+    Promise.allSettled(saved.map((o) => fetchOrder(o.id))).then((results) => {
+      const updated = results
+        .filter((r): r is PromiseFulfilledResult<Order> => r.status === 'fulfilled')
+        .map((r) => r.value);
+      setActiveOrders(updated);
+    });
   }, []);
 
   // Persist only active (non-terminal) orders
@@ -330,7 +334,10 @@ export default function App() {
       ids.forEach((id) => {
         fetchOrder(id).then((updated) => {
           setActiveOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
-        }).catch(() => {});
+        }).catch(() => {
+          // Order no longer exists in DB — remove it from local state
+          setActiveOrders((prev) => prev.filter((o) => o.id !== id));
+        });
       });
     }, 5000);
     return () => clearInterval(t);
