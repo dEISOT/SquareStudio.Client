@@ -70,6 +70,15 @@ export default function App() {
   // ── UI state ───────────────────────────────────────────────────────────────
   const [activeCat, setActiveCat]       = useState<number | 'all'>('all');
   const [query, setQuery]               = useState('');
+  const appRef = useRef<HTMLDivElement>(null);
+
+  // Switching category should always land the user at the top of the new
+  // list — otherwise the page keeps whatever scroll offset the previous
+  // category left it at, which can drop straight into the middle/end of
+  // the newly selected category.
+  useEffect(() => {
+    if (appRef.current) appRef.current.scrollTop = 0;
+  }, [activeCat]);
   const [openProduct, setOpenProduct]   = useState<Product | null>(null);
   const [openService, setOpenService]   = useState<Service | null>(null);
   const [cartOpen, setCartOpen]         = useState(false);
@@ -400,7 +409,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className="app" ref={appRef}>
       <Header
         settings={settings}
         query={query}
